@@ -120,14 +120,23 @@
     text-align:center;cursor:pointer;color:var(--ink);min-height:64px;display:flex;align-items:center;justify-content:center;transition:.12s}
   .prod[aria-pressed="true"]{background:var(--royal);border-color:var(--royal);color:#fff;box-shadow:0 4px 12px rgba(58,87,245,.3)}
   .rows{margin-top:18px;display:flex;flex-direction:column;gap:10px}
-  .row2{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;gap:10px;align-items:center;border:1px solid var(--line);
-    border-radius:12px;padding:12px 14px;background:var(--surface-2)}
+  .row2{display:grid;grid-template-columns:1.25fr 1.15fr .9fr .8fr auto;gap:10px;align-items:center;border:1px solid var(--line);
+    border-radius:12px;padding:13px 14px;background:var(--surface-2)}
   @media(max-width:640px){.row2{grid-template-columns:1fr 1fr}}
   .row2 .rp{font-weight:800;color:var(--royal);font-size:14px}
+  .row2 .company{font-weight:750;font-size:13px}.row2 .meta{font-size:12px;color:var(--muted)}
   .row2 input{border:1px solid var(--line);border-radius:9px;padding:9px 10px;font:inherit;background:#fff;color:var(--ink);width:100%}
-  .row2 .del{border:0;background:none;color:var(--muted);font-size:18px;cursor:pointer;justify-self:end}
+  .row2 .edit,.row2 .del{border:0;background:none;color:var(--royal);font-size:17px;cursor:pointer;justify-self:end;padding:4px}
+  .row2 .del{color:var(--muted)}
   .empty{color:var(--muted);font-size:14px;padding:14px 0}
   .actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap;padding:20px 0 0}
+
+  /* ===== Vertragsdialog ===== */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(15,27,54,.45);display:grid;place-items:center;padding:22px;z-index:90;backdrop-filter:blur(3px)}
+  .modal-backdrop.hidden{display:none}.contract-modal{width:min(720px,100%);max-height:min(760px,calc(100vh - 44px));overflow:auto;background:#fff;border-radius:22px;box-shadow:0 28px 80px rgba(15,27,54,.25);padding:28px}
+  .modal-top{display:flex;justify-content:space-between;gap:18px;align-items:start;margin-bottom:22px}.modal-top h2{font-size:24px;letter-spacing:-.025em;margin:0}.modal-top p{color:var(--muted);margin:4px 0 0;font-size:13px}.close-modal{border:0;background:var(--surface-2);width:34px;height:34px;border-radius:50%;font-size:20px;color:var(--ink-2);cursor:pointer}
+  .contract-form{display:grid;grid-template-columns:1fr 1fr;gap:15px}.contract-form .full{grid-column:1/-1}.contract-form label{display:block;font-size:12px;font-weight:800;letter-spacing:.04em;margin-bottom:6px}.contract-form input,.contract-form select,.contract-form textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 12px;color:var(--ink);font:inherit;background:#fff}.contract-form textarea{min-height:88px;resize:vertical}.company-picker{position:relative}.company-results{position:absolute;top:100%;left:0;right:0;max-height:190px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 28px rgba(15,27,54,.13);z-index:2;margin-top:5px}.company-results.hidden{display:none}.company-results button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:10px 12px;font:inherit;font-size:13px;cursor:pointer}.company-results button:hover{background:var(--royal-050);color:var(--royal)}.company-help{font-size:11px;color:var(--muted);margin:6px 0 0}.modal-actions{display:flex;justify-content:space-between;gap:10px;margin-top:24px}.modal-actions .right{display:flex;gap:10px}
+  @media(max-width:640px){.row2{grid-template-columns:1fr 1fr}.row2 .rp{grid-column:1/-1}.contract-form{grid-template-columns:1fr}.contract-form .full{grid-column:auto}.modal-actions{align-items:stretch;flex-direction:column}.modal-actions .right{display:grid;grid-template-columns:1fr 1fr}.modal-actions .btn{width:100%}}
 
   /* ===== Step 3 themes ===== */
   .themes{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
@@ -241,6 +250,26 @@
   </section>
 
 </main>
+
+<div class="modal-backdrop hidden" id="contractModal" role="dialog" aria-modal="true" aria-labelledby="contractModalTitle">
+  <section class="contract-modal">
+    <div class="modal-top">
+      <div><h2 id="contractModalTitle">Vertrag erfassen</h2><p>Produkt, Gesellschaft und Prämie übersichtlich hinterlegen.</p></div>
+      <button class="close-modal" id="contractClose" type="button" aria-label="Dialog schliessen">×</button>
+    </div>
+    <form class="contract-form" id="contractForm">
+      <div class="full"><label for="contractProduct">Produkt</label><select id="contractProduct" required></select></div>
+      <div class="full company-picker"><label for="contractCompany">Gesellschaft oder Bank</label><input id="contractCompany" type="search" autocomplete="off" placeholder="z. B. Die Mobiliar, Helsana oder UBS" required><div class="company-results hidden" id="companyResults"></div><p class="company-help">Schweizer Versicherungen, Banken und Vorsorgeanbieter durchsuchen – nicht gelistete Gesellschaften können direkt eingetippt werden.</p></div>
+      <div><label for="contractPolicy">Vertrags- / Policennummer</label><input id="contractPolicy" placeholder="Optional"></div>
+      <div><label for="contractStart">Beginn</label><input id="contractStart" type="month"></div>
+      <div><label for="contractEnd">Ablauf</label><input id="contractEnd" type="month"></div>
+      <div><label for="contractPremium">Prämie in CHF</label><input id="contractPremium" type="number" min="0" step="0.01" placeholder="z. B. 478.45" required></div>
+      <div><label for="contractInterval">Zahlungsintervall</label><select id="contractInterval"><option value="monthly">Monatlich</option><option value="quarterly">Vierteljährlich</option><option value="semiannual">Halbjährlich</option><option value="annual">Jährlich</option><option value="oneoff">Einmalig</option></select></div>
+      <div class="full"><label for="contractNotes">Notizen</label><textarea id="contractNotes" placeholder="Optional, z. B. wichtige Deckung oder nächster Prüftermin"></textarea></div>
+    </form>
+    <div class="modal-actions"><button class="btn btn-ghost" id="contractRemove" type="button" hidden>Vertrag löschen</button><div class="right"><button class="btn btn-ghost" id="contractCancel" type="button">Abbrechen</button><button class="btn btn-primary" id="contractSave" type="button">Speichern</button></div></div>
+  </section>
+</div>
 
 <script>
 (function(){
@@ -485,6 +514,24 @@
       r.appendChild(row);
     });
   }
+
+  /* Erweiterte Vertragserfassung: ein Vertrag pro Produkt, mit editierbaren Details. */
+  var COMPANIES=["Agrisano","Allianz Suisse","Appenzeller Versicherungen","Assura","Atupri","AXA","Baloise","Basler Kantonalbank","Bank Cler","Banque Cantonale Vaudoise","Banque Cantonale de Genève","Cembra Money Bank","Concordia","CSS","Die Mobiliar","EGK","elipsLife","Generali Schweiz","Glarner Kantonalbank","Groupe Mutuel","Helsana","Helvetia","Hypothekarbank Lenzburg","KPT","Luzerner Kantonalbank","Migros Bank","Neon","Obwaldner Kantonalbank","ÖKK","Pax","PostFinance","Protekta","Raiffeisen","Sanitas","Schwyzer Kantonalbank","Simpego","Smile","Solothurner Kantonalbank","St. Galler Kantonalbank","Swiss Life","Swissquote","Sympany","Thurgauer Kantonalbank","UBS","Valiant","Vaudoise","Visana","Zuger Kantonalbank","Zürcher Kantonalbank","Zurich Versicherung"].sort(function(a,b){return a.localeCompare(b,"de-CH");});
+  var INTERVALS={monthly:"Monatlich",quarterly:"Vierteljährlich",semiannual:"Halbjährlich",annual:"Jährlich",oneoff:"Einmalig"};
+  var editingProduct=null;
+  var modal=document.getElementById("contractModal"), form=document.getElementById("contractForm"), productSelect=document.getElementById("contractProduct"), companyInput=document.getElementById("contractCompany"), companyResults=document.getElementById("companyResults"), policyInput=document.getElementById("contractPolicy"), startInput=document.getElementById("contractStart"), endInput=document.getElementById("contractEnd"), premiumInput=document.getElementById("contractPremium"), intervalInput=document.getElementById("contractInterval"), notesInput=document.getElementById("contractNotes"), removeContract=document.getElementById("contractRemove");
+  productSelect.innerHTML=PRODUCTS.map(function(p){return '<option value="'+p+'">'+p+'</option>';}).join("");
+  function escapeContract(v){return String(v).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+  function formatPremium(n){return "CHF "+Number(n||0).toLocaleString("de-CH",{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function showCompanies(){var needle=companyInput.value.trim().toLocaleLowerCase("de-CH"),matches=COMPANIES.filter(function(name){return !needle||name.toLocaleLowerCase("de-CH").indexOf(needle)>-1;}).slice(0,12);companyResults.innerHTML=matches.map(function(name){return '<button type="button" data-company="'+escapeContract(name)+'">'+escapeContract(name)+'</button>';}).join("")||'<button type="button" disabled>Keine Treffer – Gesellschaft direkt eintippen</button>';companyResults.classList.remove("hidden");}
+  function closeContract(){modal.classList.add("hidden");companyResults.classList.add("hidden");editingProduct=null;}
+  function openContract(product){var current=chosen[product]||{};editingProduct=product;document.getElementById("contractModalTitle").textContent=current.company?"Vertrag bearbeiten":"Vertrag erfassen";productSelect.value=product;companyInput.value=current.company||"";policyInput.value=current.pol||"";startInput.value=current.start||"";endInput.value=current.abl||"";premiumInput.value=current.premium==null?"":current.premium;intervalInput.value=current.interval||"monthly";notesInput.value=current.notes||"";removeContract.hidden=!chosen[product];modal.classList.remove("hidden");companyInput.focus();showCompanies();}
+  function renderProducts(){var g=document.getElementById("prodGrid");g.innerHTML="";PRODUCTS.forEach(function(p){var b=document.createElement("button");b.className="prod";b.textContent=p;b.setAttribute("aria-pressed",!!chosen[p]);b.addEventListener("click",function(){openContract(p);});g.appendChild(b);});}
+  function renderRows(){var r=document.getElementById("rows"),keys=Object.keys(chosen);if(!keys.length){r.innerHTML='<div class="empty">Noch keine Produkte gewählt – wählen Sie oben ein Produkt, um einen Vertrag zu erfassen.</div>';return;}r.innerHTML="";keys.forEach(function(p){var c=chosen[p],row=document.createElement("div");row.className="row2";row.innerHTML='<span class="rp">'+escapeContract(p)+'</span><span class="company">'+escapeContract(c.company||"Gesellschaft offen")+'</span><span><b>'+formatPremium(c.premium)+'</b><span class="meta"> · '+escapeContract(INTERVALS[c.interval]||"Monatlich")+'</span></span><span class="meta">'+(c.abl?"Ablauf "+escapeContract(c.abl):"Ohne Ablauf")+'</span><span><button class="edit" title="Bearbeiten" aria-label="'+escapeContract(p)+' bearbeiten">✎</button><button class="del" title="Entfernen" aria-label="'+escapeContract(p)+' entfernen">×</button></span>';row.querySelector(".edit").addEventListener("click",function(){openContract(p);});row.querySelector(".del").addEventListener("click",function(){delete chosen[p];renderProducts();renderRows();saveState();});r.appendChild(row);});}
+  companyInput.addEventListener("input",showCompanies);companyInput.addEventListener("focus",showCompanies);companyResults.addEventListener("click",function(e){var b=e.target.closest("button[data-company]");if(!b)return;companyInput.value=b.dataset.company;companyResults.classList.add("hidden");});
+  document.getElementById("contractClose").addEventListener("click",closeContract);document.getElementById("contractCancel").addEventListener("click",closeContract);modal.addEventListener("click",function(e){if(e.target===modal)closeContract();});form.addEventListener("submit",function(e){e.preventDefault();});
+  document.getElementById("contractSave").addEventListener("click",function(){var product=productSelect.value,company=companyInput.value.trim(),premium=Number(premiumInput.value);if(!company){companyInput.focus();return;}if(!Number.isFinite(premium)||premium<0){premiumInput.focus();return;}if(editingProduct&&editingProduct!==product)delete chosen[editingProduct];chosen[product]={company:company,pol:policyInput.value.trim(),start:startInput.value,abl:endInput.value,premium:premium,interval:intervalInput.value,notes:notesInput.value.trim()};renderProducts();renderRows();saveState();closeContract();});
+  removeContract.addEventListener("click",function(){if(editingProduct){delete chosen[editingProduct];renderProducts();renderRows();saveState();closeContract();}});
 
   /* =============== Step 3: Auswertung =============== */
   var CALC_LINK = { "health":"franchise.html", "pensiongap":"vorsorgerechner.html", "real-estate":"immobilienrechner.html" };
