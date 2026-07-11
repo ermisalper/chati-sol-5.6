@@ -271,9 +271,37 @@
       opts:[["unter3","Unter 3 Monate"],["3bis6","3–6 Monate"],["ueber6","Über 6 Monate"]]}
   ];
 
-  var A = {}; // answers: id -> value | Set | number | string
-  Q.forEach(function(q){ if(q.type==="slider") A[q.id]=q.def; else if(q.type==="multi") A[q.id]=new Set(); else A[q.id]=null; });
-  var answered = {}; // id -> true, sobald der Kunde geantwortet hat
+  var STORAGE_KEY="combinvest.customerProfile.v1";
+  var state={step:1,question:0,answers:{},answered:{},contracts:{},notizen:[],updatedAt:null};
+  function defaults(){
+    Q.forEach(function(q){
+      state.answers[q.id]=q.type==="slider"?q.def:q.type==="multi"?new Set():null;
+    });
+  }
+  function loadState(){
+    defaults();
+    try{
+      var saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+      if(!saved||!saved.answers) return;
+      state.step=Math.max(1,Math.min(3,+saved.step||1));
+      state.question=Math.max(0,Math.min(Q.length-1,+saved.question||0));
+      state.answered=saved.answered||{}; state.contracts=saved.contracts||{};
+      state.notizen=Array.isArray(saved.notizen)?saved.notizen:[];
+      Q.forEach(function(q){
+        if(!(q.id in saved.answers)) return;
+        state.answers[q.id]=q.type==="multi"?new Set(saved.answers[q.id]||[]):saved.answers[q.id];
+      });
+    }catch(err){ console.warn("Gespeichertes Profil konnte nicht geladen werden.",err); }
+  }
+  function saveState(){
+    var serial={step:state.step,question:qi,answered:state.answered,contracts:state.contracts,
+      notizen:state.notizen,updatedAt:new Date().toISOString(),answers:{}};
+    Q.forEach(function(q){var v=state.answers[q.id];serial.answers[q.id]=v instanceof Set?Array.from(v):v;});
+    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(serial));}catch(err){console.warn("Profil konnte nicht gespeichert werden.",err);}
+  }
+  loadState();
+  var A=state.answers;
+  var answered=state.answered;
 
   /* =============== Relevanz-Modell (transparent, 0–5) =============== */
   var AREAS = [
@@ -354,7 +382,7 @@
   }
 
   /* =============== Wizard =============== */
-  var qi = 0;
+  var qi = state.question;
   var qTitle=document.getElementById("qTitle"), qSub=document.getElementById("qSub"),
       answers=document.getElementById("answers"), qNext=document.getElementById("qNext"),
       qBack=document.getElementById("qBack");
@@ -390,7 +418,7 @@
             }
             renderQ();
           }
-          answered[q.id]=true; updateTachos(); syncBtns();
+          answered[q.id]=true; updateTachos(); syncBtns(); saveState();
         });
         answers.appendChild(b);
       });
@@ -400,13 +428,13 @@
       var sv=document.createElement("div"); sv.className="sv";
       sv.innerHTML='<span>'+q.fmt(q.min)+'</span><b class="num">'+q.fmt(A[q.id])+'</b><span>'+q.fmt(q.max)+'</span>';
       r.addEventListener("input",function(){ A[q.id]=+this.value; answered[q.id]=true;
-        sv.querySelector("b").textContent=q.fmt(+this.value); updateTachos(); });
+        sv.querySelector("b").textContent=q.fmt(+this.value); updateTachos(); saveState(); });
       wrap.appendChild(r); wrap.appendChild(sv); answers.appendChild(wrap);
     } else if(q.type==="text"){
       var inp=document.createElement("input"); inp.type="text"; inp.placeholder=q.placeholder||"";
       if(q.inputmode) inp.inputMode=q.inputmode; if(q.maxlength) inp.maxLength=q.maxlength;
       inp.value=A[q.id]||"";
-      inp.addEventListener("input",function(){ A[q.id]=this.value; answered[q.id]=true; syncBtns(); });
+      inp.addEventListener("input",function(){ A[q.id]=this.value; answered[q.id]=true; syncBtns(); saveState(); });
       answers.appendChild(inp);
       setTimeout(function(){inp.focus();},50);
     }
@@ -417,23 +445,23 @@
     qNext.textContent = qi===Q.length-1 ? "Zum Vertragscheck →" : "Weiter";
     qNext.disabled = !isAnswered(Q[qi]);
   }
-  qBack.addEventListener("click",function(){ if(qi>0){qi--; renderQ();} });
+  qBack.addEventListener("click",function(){ if(qi>0){qi--; renderQ(); saveState();} });
   qNext.addEventListener("click",function(){
     if(!isAnswered(Q[qi])) return;
-    if(qi<Q.length-1){ qi++; renderQ(); } else { go(2); }
+    if(qi<Q.length-1){ qi++; renderQ(); saveState(); } else { go(2); }
   });
 
   /* =============== Step 2: Vertragscheck =============== */
   var PRODUCTS=["Vorsorgeversicherung","VorsorgeBank 3a","Hypothek","Private Haftpflicht","Sparplan","Krankenkasse",
     "Gebäude","Rechtsschutz","Hausrat","Motorfahrzeug","Kindersparplan","Todesfall","Erwerbsunfähigkeit","Kredit"];
-  var chosen={};
+  var chosen=state.contracts;
   function renderProducts(){
     var g=document.getElementById("prodGrid"); g.innerHTML="";
     PRODUCTS.forEach(function(p){
       var b=document.createElement("button"); b.className="prod"; b.textContent=p;
       b.setAttribute("aria-pressed", !!chosen[p]);
       b.addEventListener("click",function(){ if(chosen[p]){delete chosen[p];}else{chosen[p]={pol:"",abl:""};}
-        b.setAttribute("aria-pressed", !!chosen[p]); renderRows(); });
+        b.setAttribute("aria-pressed", !!chosen[p]); renderRows(); saveState(); });
       g.appendChild(b);
     });
   }
@@ -448,9 +476,9 @@
         '<input placeholder="Ablauf (MM.JJJJ)" value="'+(chosen[p].abl||"")+'">'+
         '<button class="del" title="Entfernen">✕</button>';
       var ins=row.querySelectorAll("input");
-      ins[0].addEventListener("input",function(){chosen[p].pol=this.value;});
-      ins[1].addEventListener("input",function(){chosen[p].abl=this.value;});
-      row.querySelector(".del").addEventListener("click",function(){ delete chosen[p]; renderProducts(); renderRows(); });
+      ins[0].addEventListener("input",function(){chosen[p].pol=this.value;saveState();});
+      ins[1].addEventListener("input",function(){chosen[p].abl=this.value;saveState();});
+      row.querySelector(".del").addEventListener("click",function(){ delete chosen[p]; renderProducts(); renderRows(); saveState(); });
       r.appendChild(row);
     });
   }
@@ -474,6 +502,7 @@
 
   /* =============== Navigation =============== */
   function go(step){
+    state.step=step; saveState();
     [1,2,3].forEach(function(n){ document.getElementById("panel"+n).classList.toggle("hidden", n!==step); });
     document.querySelectorAll("#steps .step").forEach(function(b){ b.classList.toggle("active", +b.dataset.step===step); });
     if(step===3) renderThemes();
@@ -481,11 +510,34 @@
   }
   document.getElementById("steps").addEventListener("click",function(e){var b=e.target.closest(".step"); if(b&&b.dataset.step) go(+b.dataset.step);});
   document.querySelectorAll("[data-go]").forEach(function(b){ b.addEventListener("click",function(){ go(+this.dataset.go); }); });
-  document.getElementById("finishBtn").addEventListener("click",function(){ window.location.href="index.html"; });
-  document.getElementById("pdfBtn").addEventListener("click",function(){ window.print(); });
+  function answerLabel(q,value){
+    if(value instanceof Set) return Array.from(value).map(function(v){return answerLabel(q,v);}).join(", ");
+    var option=(q.opts||[]).find(function(o){return o[0]===value;});
+    return option?option[1]:(value===null||value===""?"—":String(value));
+  }
+  function customerProfile(){
+    var s=scores(), modules={};
+    AREAS.forEach(function(a){modules[a.key]={relevanz:s[a.key],label:LABELS[s[a.key]]};});
+    return {id:"local-"+Date.now(),basisdaten:{geschlecht:A.geschlecht,alter:A.alter,wohnort_plz:A.plz,
+      einkommen_brutto_jahr:A.brutto,erwerbsstatus:A.erwerb},answers:A,modules:modules,
+      vertraege:chosen,notizen:state.notizen,erstellt_am:new Date().toISOString().slice(0,10)};
+  }
+  function esc(v){return String(v).replace(/[&<>\"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'\"':"&quot;"}[c];});}
+  function exportPdf(){
+    var profile=customerProfile(), ranked=AREAS.slice().sort(function(a,b){return profile.modules[b.key].relevanz-profile.modules[a.key].relevanz;});
+    var answerRows=Q.map(function(q){return "<tr><th>"+esc(q.t)+"</th><td>"+esc(answerLabel(q,A[q.id]))+"</td></tr>";}).join("");
+    var scoreRows=ranked.map(function(a,i){var m=profile.modules[a.key];return "<tr><td>"+(i+1)+"</td><th>"+esc(a.name)+"</th><td>"+m.relevanz+"/5</td><td>"+esc(m.label)+"</td></tr>";}).join("");
+    var contracts=Object.keys(chosen).length?Object.keys(chosen).map(function(p){return "<li><b>"+esc(p)+"</b> — Pol.-Nr. "+esc(chosen[p].pol||"—")+", Ablauf "+esc(chosen[p].abl||"—")+"</li>";}).join(""):"<li>Keine bestehenden Produkte erfasst</li>";
+    var w=window.open("","_blank");
+    if(!w){alert("Bitte Pop-ups erlauben, um das PDF zu erstellen.");return;}
+    w.document.write('<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>Combinvest Beratungsprotokoll</title><style>@page{size:A4;margin:16mm}body{font:12px Arial;color:#0f1b36}h1{color:#3a57f5;margin-bottom:2px}h2{margin-top:24px;border-bottom:2px solid #dce3ff;padding-bottom:5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid #e4e9f5;padding:7px}th{width:48%}.meta{color:#51607a}.no-print{margin:16px 0;padding:10px 16px;background:#3a57f5;color:white;border:0;border-radius:6px}@media print{.no-print{display:none}}</style></head><body><button class="no-print" onclick="window.print()">Als PDF speichern</button><h1>Combinvest Beratungsprotokoll</h1><div class="meta">Erstellt am '+esc(profile.erstellt_am)+' · Profil-ID '+esc(profile.id)+'</div><h2>Prioritäten & Empfehlungen</h2><table><tr><th>Rang</th><th>Bereich</th><th>Score</th><th>Relevanz</th></tr>'+scoreRows+'</table><h2>Antworten (19 Fragen)</h2><table>'+answerRows+'</table><h2>Bestehende Verträge</h2><ul>'+contracts+'</ul><p class="meta">Hinweis: Dieses Protokoll dokumentiert das Profiling und ersetzt keine persönliche Finanz- oder Versicherungsberatung.</p><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
+    w.document.close();
+  }
+  document.getElementById("finishBtn").addEventListener("click",function(){ saveState(); window.location.href="index.html"; });
+  document.getElementById("pdfBtn").addEventListener("click",exportPdf);
 
   /* init */
-  renderQ(); updateTachos(); renderProducts(); renderRows();
+  renderQ(); updateTachos(); renderProducts(); renderRows(); go(state.step);
 })();
 </script>
 </body>
