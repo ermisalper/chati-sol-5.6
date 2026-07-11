@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de-CH" data-ajax-url-params="[]">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, minimum-scale=1">
+    <meta name="publisher" content="riskine">
+    <meta name="copyright" content="riskine">
+    <meta name="description" content="Berechnen Sie mit riskine Ihre Lebensrisken und erkennen Sie Ihre Versicherungsprioritäten. Transparent, kostenfrei und auf Basis echter Daten.">
+    <base href="/" />
+    <title>riskine - creating transparency</title>
+</head>
+
+<body class="preload ">
+<!--
+  =====================================================================
+  REFERENZ — Original Riskine Dashboard (Theme: combinvest-ch)
+  =====================================================================
+  Diese Datei ist die 1:1 Referenz-Vorlage der Riskine-Beratungsplattform,
+  aus der Combinvest abgeleitet wird. Sie dient Claude UND Codex als
+  visuelle/strukturelle Bauanleitung — NICHT als produktiver Code.
+
+  WICHTIG:
+  - Enthält session-spezifische Tokens (CSRF, prefill) und einen
+    Google-Maps-API-Key aus der combinvest-ch Instanz. Diese sind für
+    unser Projekt irrelevant und sollten NICHT übernommen werden.
+  - Externe Assets (advisory-components, bootstrap, select2, jquery,
+    Google Maps) sind Riskine-Frontend-Abhängigkeiten. Wir bauen das
+    Verhalten in unserem eigenen Stack nach (siehe docs/riskine-combinvest-blueprint.md).
+
+  Struktur-Referenz (was hier zu sehen ist):
+  1. Notizen-Panel (#sideNotes) — seitlich ein-/ausklappbar, pro Thema
+     ein eigenes Textfeld (Allgemein, Gesundheit, Pension, Vermögen,
+     Immobilien, Versicherungen, Kinder, Lebensstandard, Steuervorteile).
+  2. Header/Navigation — Sprachwahl (de/fr/en), Logo (logo-long.svg /
+     logo.svg), Jump-Back, Mobile-Nav mit Live-Risiko-Indikator.
+  3. Dashboard "Beratung für Privatkunden":
+     - Modul "Profiling für Privatkunden" (Start/Weiter zur Empfehlung)
+     - Modul "Ziele, Wünsche & Träume Planung"
+     - Präsentations-Banner (dl.combinvest.ch)
+     - Tools-Sektion "Nützliche Schnellanalyse":
+         * Franchise Vergleich
+         * Starten oder Warten
+         * Sparrechner
+  =====================================================================
+-->
+
+<section id="sideNotes" class="">
+    <form id="notesForm" action="notes/save" method="POST">
+        <label for="notesTextarea">Notizen und Anmerkungen</label>
+        <div id="sideNotesScrollContainer">
+
+            <div class="noteBlock">
+                <label for="notesTextarea" id="labelgeneral">
+                    Allgemein <span class="icon-down-arrow rotate"></span>
+                </label>
+                <textarea name="notizen[general]" id="notesTextarea" maxlength="2000" class="sidenote-textarea expanded"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-health">
+                    Gesundheit <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[health]" id="notesTextarea-health" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-pensiongap">
+                    Pension vorsorgen <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[pensiongap]" id="notesTextarea-pensiongap" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-investment">
+                    Vermögen aufbauen <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[investment]" id="notesTextarea-investment" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-real-estate">
+                    Immobilien <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[real-estate]" id="notesTextarea-real-estate" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-values-protection">
+                    Versicherungen <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[values-protection]" id="notesTextarea-values-protection" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-children">
+                    Kinder absichern <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[children]" id="notesTextarea-children" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-property-creation">
+                    Lebensstandard beibehalten <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[property-creation]" id="notesTextarea-property-creation" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+            <div class="noteBlock">
+                <label for="notesTextarea-tax-advantage">
+                    Steuervorteile nutzen <span class="icon-down-arrow"></span>
+                </label>
+                <textarea name="notizen[tax-advantage]" id="notesTextarea-tax-advantage" maxlength="2000" class="sidenote-textarea"></textarea>
+            </div>
+
+        </div>
+        <button id="saveNotes" class="button-primary">Speichern &amp; schließen</button>
+    </form>
+
+    <button id="toggleNotes">
+        <span class="icon-icon-notiz icon-small icon-notes-open"></span>
+        <span class="icon-X icon-small icon-notes-close"></span>
+        <span class="spanText">Notizen</span>
+    </button>
+</section>
+
+<div id="page" class="">
+
+    <div id="pageOverlay"></div>
+
+    <header class="container">
+        <section id="navWrapper" class="row">
+            <nav id="mainNav" class="col-xs-12 hidden-xs">
+                <ul class="linkContainer hidden-xs" style="list-style: none;">
+                    <li class="menuItem">
+                        <a><h2 class="all-caps-font">de</h2></a>
+                        <ul class="sub-menu" style="list-style: none;">
+                            <li><a href="?lang=de" target="_self" class="all-caps-font">de</a></li>
+                            <li><a href="?lang=fr" target="_self" class="all-caps-font">fr</a></li>
+                            <li><a href="?lang=en" target="_self" class="all-caps-font">en</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <a class="client-logo nav-jump-back navigation-link jump-back" data-redirect-on-complete="true">
+                    <span class="icon-jump-back is-size-3"></span>
+                </a>
+                <div class="client-logo logo-dashboard">
+                    <img class="headerLogo visible-lg" src="themes/combinvest-ch/img/logos/logo-long.svg" alt="riskine-logo">
+                    <img class="headerLogoSmall hidden-lg" src="themes/combinvest-ch/img/logos/logo.svg" alt="riskine-logo">
+                </div>
+            </nav>
+
+            <div id="mobileNavigation" class="visible-xs">
+                <a class="homeLink" href="dashboard">
+                    <h4 class="nav-item-header all-caps-font">Zur</h4>
+                    <h2 class="nav-item-label all-caps-font">Startseite</h2>
+                </a>
+                <div class="mobile-live-risk-header">
+                    <span class="pulsatingDot"></span>
+                    Live Risiko
+                </div>
+                <div class="client-logo">
+                    <img class="headerLogo visible-lg" src="themes/combinvest-ch/img/logos/logo-long.svg" alt="riskine-logo">
+                    <img class="headerLogoSmall hidden-lg" src="themes/combinvest-ch/img/logos/logo.svg" alt="riskine-logo">
+                </div>
+            </div>
+        </section>
+    </header>
+
+    <main id="mainContent" class="">
+        <div class="dashboardContainer">
+
+            <div class="container">
+                <div class="row">
+                    <div class="col-xs-12 consultingHeader sectionHeader">
+                        <span class="icon-banner-thick headerIcon icon-medium"></span>
+                        <h1 class="sectionHeadline">Beratung für Privatkunden</h1>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <section class="col-xs-12 col-sm-12 col-md-7 moduleColumn riskAnalysis">
+                        <div class="module moduleBig analysisModuleStart private">
+                            <div class="headlineWrapper">
+                                <h1>Profiling für Privat&shy;kunden</h1>
+                            </div>
+                            <p class="moduletDescriptionText">
+                                Finden Sie heraus, welche Themen für Sie die höchste Relevanz haben.<br>
+                            </p>
+                            <a id="toRecommendationPage" class="button-secondary" href="/advisories/private-customer-advisory/risk-analysis">Profiling re - Starten</a>
+                            <form action="/advisories/private-customer-advisory/theme-recommendation" method="post">
+                                <button type="submit" id="dashboard" class="button-primary">zur Empfehlungsseite</button>
+                            </form>
+                        </div>
+                    </section>
+
+                    <section class="col-xs-12 col-sm-12 col-md-5 moduleColumn financialGoals">
+                        <div class="module moduleBig analysisModuleStart private">
+                            <div class="headlineWrapper">
+                                <h1>Ziele, Wünsche &amp; Träume Planung</h1>
+                            </div>
+                            <p class="moduletDescriptionText">
+                                Welche Ziele und Wünsche sind Ihnen in Ihrer persönlichen Lebensplanung besonders wichtig?<br>
+                            </p>
+                            <form action="/advisories/private-tools/financial-goals" method="post">
+                                <button type="submit" id="dashboard" class="button-primary">Planung starten</button>
+                            </form>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="container">
+                <a class="dashboardPresentation borderRadius-8 background-image img-de" href="http://dl.combinvest.ch/" target="_blank"></a>
+            </div>
+
+            <div id="tools" class="container">
+                <h2 class="text-uppercase regular" style="font-size:18px">Nützliche Schnellanalyse</h2>
+                <div class="row">
+                    <div class="toolModuleWrapper">
+
+                        <section id="franchise-calculator" class="col-xs-12 col-sm-12 col-md-6 col-lg-4 moduleColumn">
+                            <a class="module moduleMedium toolModule moduleLinks" href="/advisories/private-tools/franchise-calculator">
+                                <span class="icon-franchise-calculator toolModuleIcon size-icon-large"></span>
+                                <div class="toolModuleTextContainer">
+                                    <h2>Franchise Vergleich</h2>
+                                    <p>Vergleichen Sie Ihre aktuelle Grundversicherungsprämie und finden Sie heraus, wie viel Sie monatlich einsparen können.</p>
+                                </div>
+                                <div class="startSectionWrapper"></div>
+                            </a>
+                        </section>
+
+                        <section id="start-or-wait" class="col-xs-12 col-sm-12 col-md-6 col-lg-4 moduleColumn">
+                            <a class="module moduleMedium toolModule moduleLinks" href="/advisories/private-tools/start-or-wait">
+                                <span class="icon-start-or-wait toolModuleIcon size-icon-large"></span>
+                                <div class="toolModuleTextContainer">
+                                    <h2>Starten oder Warten</h2>
+                                    <p>Finden Sie mit wenigen Klicks heraus, welche Auswirkungen auf den Gesamtertrag es hat, entweder sofort oder erst zu einem späteren Zeitpunkt mit dem Sparen zu starten.</p>
+                                </div>
+                                <div class="startSectionWrapper"></div>
+                            </a>
+                        </section>
+
+                        <section id="savings-calculator" class="col-xs-12 col-sm-12 col-md-6 col-lg-4 moduleColumn">
+                            <a class="module moduleMedium toolModule moduleLinks" href="/advisories/private-tools/savings-calculator">
+                                <span class="icon-savings-calculator toolModuleIcon size-icon-large"></span>
+                                <div class="toolModuleTextContainer">
+                                    <h2>Sparrechner</h2>
+                                    <p>Schaffen Sie sich einen Überblick über die Entwicklung Ihres Geldes in verschiedenen Szenarien.</p>
+                                </div>
+                                <div class="startSectionWrapper"></div>
+                            </a>
+                        </section>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+</div>
+
+</body>
+</html>
