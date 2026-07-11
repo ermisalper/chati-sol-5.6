@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Combinvest — Schweizer Finanzberatung & Vermögensplanung</title>
+  <meta name="description" content="Combinvest Advisory Engine: Personalisierte Finanzstrategie für Vorsorge, Vermögen und Versicherung. Schweizer Finanzberatung auf Augenhöhe.">
+  <meta name="theme-color" content="#3A57F5">
+  <style>
+    :root {
+      --royal-blue: #3A57F5;
+      --royal-blue-dark: #2D3FA8;
+      --royal-blue-light: #E8ECFC;
+      --text-dark: #0F172A;
+      --text-gray: #64748B;
+      --text-light: #F1F5F9;
+      --border-color: #E2E8F0;
+      --surface-bg: #FFFFFF;
+      --page-bg: #F8FAFC;
+      --success: #16A34A;
+      --radius: 8px;
+      --radius-lg: 16px;
+      --maxw: 1240px;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--page-bg);
+      color: var(--text-dark);
+      line-height: 1.6;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    h1 {
+      font-size: clamp(28px, 5vw, 48px);
+      line-height: 1.15;
+    }
+
+    h2 {
+      font-size: clamp(24px, 4vw, 36px);
+      line-height: 1.2;
+    }
+
+    h3 {
+      font-size: clamp(18px, 3vw, 24px);
+    }
+
+    a {
+      color: var(--royal-blue);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    a:hover {
+      color: var(--royal-blue-dark);
+    }
+
+    button {
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      border-radius: var(--radius);
+      transition: all 0.2s;
+    }
+
+    .wrap {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ========== Header & Navigation ========== */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--surface-bg);
+      border-bottom: 1px solid var(--border-color);
+      backdrop-filter: blur(8px);
+      background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    .header-inner {
+      max-width: var(--maxw);
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--text-dark);
+      letter-spacing: -0.03em;
+    }
+
+    .brand span {
+      color: var(--royal-blue);
+    }
+
+    .nav-pills {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      padding: 8px 16px;
+      border-radius: 24px;
+      background: var(--page-bg);
+      border: 1px solid transparent;
+      color: var(--text-gray);
+      font-size: 13px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .pill:hover {
+      background: var(--royal-blue-light);
+      color: var(--royal-blue);
+      border-color: var(--royal-blue);
+    }
+
+    .pill.active {
+      background: var(--royal-blue);
+      color: white;
+      border-color: var(--royal-blue);
+    }
+
+    @media (max-width: 768px) {
+      .header-inner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .nav-pills {
+        width: 100%;
+        justify-content: flex-start;
+      }
+    }
+
+    /* ========== Hero Section ========== */
+    .hero {
+      padding: 80px 0 60px;
+      background: linear-gradient(135deg, var(--surface-bg) 0%, var(--royal-blue-light) 100%);
+    }
+
+    .hero-content {
+      max-width: 720px;
+    }
+
+    .hero h1 {
+      color: var(--text-dark);
+      margin-bottom: 16px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: var(--text-gray);
+      margin-bottom: 32px;
+      line-height: 1.65;
+      max-width: 600px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 14px 28px;
+      border-radius: var(--radius-lg);
+      font-size: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 2px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+    }
+
+    .btn-primary {
+      background: var(--royal-blue);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--royal-blue-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(58, 87, 245, 0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--royal-blue);
+      border-color: var(--royal-blue);
+    }
+
+    .btn-secondary:hover {
+      background: var(--royal-blue-light);
+    }
+
+    /* ========== Features Grid ========== */
+    .features {
+      padding: 80px 0;
+      background: var(--surface-bg);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--royal-blue);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: clamp(24px, 4vw, 36px);
+      color: var(--text-dark);
+      margin-bottom: 16px;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-gray);
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+
+    .feature-card {
+      background: var(--surface-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--royal-blue);
+      box-shadow: 0 12px 32px rgba(58, 87, 245, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--royal-blue-light);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card h3 {
+      margin-bottom: 12px;
+      color: var(--text-dark);
+    }
+
+    .feature-card p {
+      color: var(--text-gray);
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ========== Tools Section ========== */
+    .tools-section {
+      padding: 80px 0;
+      background: var(--page-bg);
+    }
+
+    .tools-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .tool-card {
+      background: var(--surface-bg);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tool-card:hover {
+      border-color: var(--royal-blue);
+      box-shadow: 0 12px 32px rgba(58, 87, 245, 0.12);
+      transform: translateY(-4px);
+    }
+
+    .tool-icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+
+    .tool-card h3 {
+      margin-bottom: 12px;
+    }
+
+    .tool-card p {
+      color: var(--text-gray);
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+      flex-grow: 1;
+    }
+
+    .tool-link {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--royal-blue);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tool-link:hover {
+      gap: 10px;
+    }
+
+    /* ========== CTA Section ========== */
+    .cta-section {
+      padding: 80px 0;
+      background: linear-gradient(135deg, var(--royal-blue) 0%, var(--royal-blue-dark) 100%);
+      color: white;
+    }
+
+    .cta-content {
+      max-width: 720px;
+    }
+
+    .cta-section h2 {
+      color: white;
+      margin-bottom: 20px;
+    }
+
+    .cta-section p {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 32px;
+      line-height: 1.65;
+    }
+
+    .btn-light {
+      background: white;
+      color: var(--royal-blue);
+    }
+
+    .btn-light:hover {
+      background: var(--royal-blue-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ========== Footer ========== */
+    footer {
+      background: var(--text-dark);
+      color: var(--text-light);
+      padding: 60px 0 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+
+    .footer-col h4 {
+      margin-bottom: 16px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: white;
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col li {
+      margin-bottom: 10px;
+    }
+
+    .footer-col a {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+    }
+
+    .footer-col a:hover {
+      color: white;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding-top: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .footer-brand {
+      font-weight: 700;
+      color: white;
+      font-size: 16px;
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 768px) {
+      .hero {
+        padding: 60px 0 40px;
+      }
+
+      .features,
+      .tools-section,
+      .cta-section {
+        padding: 60px 0;
+      }
+
+      .section-header {
+        margin-bottom: 40px;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .footer-content {
+        gap: 32px;
+      }
+    }
+
+    /* ========== Animations ========== */
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .feature-card,
+    .tool-card {
+      animation: slideUp 0.6s ease-out forwards;
+    }
+
+    .feature-card:nth-child(1) { animation-delay: 0.1s; }
+    .feature-card:nth-child(2) { animation-delay: 0.2s; }
+    .feature-card:nth-child(3) { animation-delay: 0.3s; }
+    .feature-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .tool-card:nth-child(1) { animation-delay: 0.1s; }
+    .tool-card:nth-child(2) { animation-delay: 0.2s; }
+    .tool-card:nth-child(3) { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+  <!-- ========== Header ========== -->
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        Combin<span>vest</span>
+      </div>
+      <nav class="nav-pills">
+        <a href="#features" class="pill">Funktionen</a>
+        <a href="#tools" class="pill">Rechner</a>
+        <a href="#contact" class="pill">Kontakt</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ========== Hero ========== -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-content">
+        <h1>Deine Finanzstrategie,<br>massgeschneidert für die Schweiz</h1>
+        <p class="hero-subtitle">
+          Kombinvest analysiert Ihre finanzielle Situation ganzheitlich. Von der Vorsorge über Vermögensaufbau bis zur Versicherung – erhalten Sie personalisierte Empfehlungen basierend auf Ihren Zielen und der Schweizer Regulierung.
+        </p>
+        <div class="btn-group">
+          <a href="analyse.html" class="btn btn-primary">
+            ▶ Finanzstatus Check Starten
+          </a>
+          <a href="#features" class="btn btn-secondary">Erfahren Sie Mehr</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Features ========== -->
+  <section class="features" id="features">
+    <div class="wrap">
+      <div class="section-header">
+        <div class="section-label">Funktionsweise</div>
+        <h2 class="section-title">Deine 3-Schritte Analyse</h2>
+        <p class="section-desc">
+          Ein strukturierter Prozess, der Ihre Finanzwelt vollständig erfasst
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">1️⃣</div>
+          <h3>Finanzstatus Check</h3>
+          <p>
+            Beantworten Sie 19 gezielte Fragen zu Ihrer persönlichen und finanziellen Situation. Das System berechnet sofort die Relevanz für alle 8 Lebensbereiche.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">2️⃣</div>
+          <h3>Vertragscheck</h3>
+          <p>
+            Verzeichnis Ihrer bestehenden Versicherungen und Vorsorgeprodukte. Das System erkennt automatisch Lücken und Redundanzen.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">3️⃣</div>
+          <h3>Risikoanalyse</h3>
+          <p>
+            Erhalten Sie priorisierte Empfehlungen für die 8 kritischen Lebensbereiche: Vorsorge, Vermögen, Immobilie, Gesundheit, Kinder, Steuern, Versicherung und Schutz.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔐</div>
+          <h3>Sicher & Anonym</h3>
+          <p>
+            Alle Daten verbleiben auf Ihrem Gerät. Keine Cloud, keine Speicherung – nur Sie sehen Ihre Finanzstrategie.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Tools ========== -->
+  <section class="tools-section" id="tools">
+    <div class="wrap">
+      <div class="section-header">
+        <div class="section-label">Integrierte Rechner</div>
+        <h2 class="section-title">Schweizer Standards, Deterministische Engines</h2>
+        <p class="section-desc">
+          Jeder Rechner implementiert offizielle Schweizer Regelwerk und ist vollständig transparent
+        </p>
+      </div>
+
+      <div class="tools-grid">
+        <a href="vorsorgerechner.html" class="tool-card">
+          <div class="tool-icon">📊</div>
+          <h3>Vorsorgerechner</h3>
+          <p>
+            Zwei-Phasen-Modell (Sparphase → Entnahmephase). Berechnet die notwendige Sparrate für Ihre Altersrente oder deckt Pensionslücken auf.
+          </p>
+          <span class="tool-link">Zur Analyse →</span>
+        </a>
+
+        <a href="immobilienrechner.html" class="tool-card">
+          <div class="tool-icon">🏠</div>
+          <h3>Immobilien-Tragbarkeit</h3>
+          <p>
+            Prüft die Tragbarkeit einer Immobilie nach Schweizer Bankenstandard (5% Kalkulationszins, 33.3% Einkommenslimit).
+          </p>
+          <span class="tool-link">Zur Analyse →</span>
+        </a>
+
+        <a href="franchise.html" class="tool-card">
+          <div class="tool-icon">🏥</div>
+          <h3>Franchise-Rechner</h3>
+          <p>
+            Vergleichen Sie Franchise-Varianten (CHF 300–2500) mit echten Krankenkassen-Prämien für Sie und Ihre Familie.
+          </p>
+          <span class="tool-link">Zur Analyse →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CTA ========== -->
+  <section class="cta-section" id="contact">
+    <div class="wrap">
+      <div class="cta-content">
+        <h2>Bereit für Ihre Finanzstrategie?</h2>
+        <p>
+          Starten Sie den Finanzstatus Check und erhalten Sie in wenigen Minuten eine vollständige Übersicht Ihrer finanziellen Situation mit priorisierten Handlungsempfehlungen.
+        </p>
+        <a href="analyse.html" class="btn btn-light">
+          ▶ Jetzt Starten
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== Footer ========== -->
+  <footer>
+    <div class="wrap">
+      <div class="footer-content">
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="#features">Funktionen</a></li>
+            <li><a href="#tools">Rechner</a></li>
+            <li><a href="analyse.html">Finanzstatus Check</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Rechner</h4>
+          <ul>
+            <li><a href="vorsorgerechner.html">Vorsorgerechner</a></li>
+            <li><a href="immobilienrechner.html">Immobilien-Tragbarkeit</a></li>
+            <li><a href="franchise.html">Franchise-Rechner</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Informationen</h4>
+          <ul>
+            <li><a href="impressum.html">Impressum</a></li>
+            <li><a href="datenschutz.html">Datenschutz</a></li>
+            <li><a href="https://github.com/ermisalper/claude">GitHub</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Über Combinvest</h4>
+          <p style="color: rgba(255, 255, 255, 0.7); font-size: 14px; line-height: 1.6;">
+            Combinvest ist ein Open-Source Finanzberater für die Schweiz. Entwickelt mit Fokus auf Sicherheit, Transparenz und Deterministische Engines.
+          </p>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div class="footer-brand">© 2026 Combinvest</div>
+        <div>
+          Made with ❤️ for Swiss Financial Freedom
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

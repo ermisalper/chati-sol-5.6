@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="de-CH">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Combinvest — Tragbarkeitsrechner</title>
+<meta name="description" content="Immobilien-Tragbarkeit nach Schweizer Standard: kalkulatorischer Zins 5 %, Nebenkosten 1 %, Limit 33.33 % des Bruttoeinkommens.">
+<style>
+  :root{
+    --ink:#0B192C; --ink-2:#41506A; --muted:#7A8699;
+    --white:#fff; --line:#E9EDF3; --line-2:#F1F4F9;
+    --accent:#3A57F5; --gold:#B8923B; --good:#1F7A4D; --bad:#B23A34;
+    --seg-1:#0B192C; --seg-2:#8595AD; --seg-3:#C7B489;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--white);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .num{font-variant-numeric:tabular-nums}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+
+  header{border-bottom:1px solid var(--line)}
+  .nav{display:flex;align-items:center;gap:8px;padding:14px 0;flex-wrap:wrap}
+  .step{display:flex;flex-direction:column;gap:1px;border:1px solid var(--line);border-radius:11px;padding:8px 15px;min-width:118px}
+  .step small{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:800}
+  .step b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:800}
+  .step.home{border:0;min-width:auto;padding-left:0}.step.home b{color:var(--accent)}
+  .step.active{background:var(--ink);border-color:var(--ink)}.step.active small{color:#9fb0c9}.step.active b{color:#fff}
+  .steps{display:flex;gap:8px;flex-wrap:wrap}.nav .spacer{flex:1}
+  .lang{font-weight:800;font-size:12px;letter-spacing:.12em;color:var(--ink-2)}
+  .brand{display:flex;align-items:baseline;gap:1px;font-weight:900;font-size:21px;letter-spacing:-.02em}
+  .brand .b1{color:var(--ink)}.brand .b2{color:var(--accent)}
+
+  .head{padding:52px 0 8px}
+  .kicker{color:var(--accent);font-weight:800;font-size:11.5px;letter-spacing:.2em;text-transform:uppercase}
+  h1{font-size:clamp(30px,4.6vw,46px);font-weight:900;letter-spacing:-.03em;line-height:1.03;margin:.34em 0 .12em}
+  .lead{color:var(--ink-2);font-size:16.5px;max-width:60ch;margin:0}
+
+  .grid{display:grid;grid-template-columns:330px 1fr;gap:56px;align-items:start;padding:40px 0 90px}
+  @media(max-width:900px){.grid{grid-template-columns:1fr;gap:36px}}
+
+  .group{margin-bottom:8px}
+  .group .gt{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+    padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:18px}
+  .field{margin-bottom:24px}
+  .field .lab{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px}
+  .field .lab span{font-size:13.5px;font-weight:650}.field .lab b{font-size:14px;font-weight:800}
+  .field .sub{font-size:11.5px;color:var(--muted);margin-top:5px}
+  input[type=range]{width:100%;height:22px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:2px;background:var(--line);border-radius:2px}
+  input[type=range]::-moz-range-track{height:2px;background:var(--line);border-radius:2px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--ink);margin-top:-7px;border:2px solid #fff;box-shadow:0 1px 4px rgba(11,25,44,.28)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid #fff}
+
+  .result{display:flex;flex-direction:column}
+  .r-kick{font-size:11.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+  .bighead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:8px 0 2px}
+  .r-big{font-size:clamp(44px,7vw,66px);font-weight:900;letter-spacing:-.04em;line-height:1}
+  .r-big.ok{color:var(--good)} .r-big.no{color:var(--bad)}
+  .status{font-size:13px;font-weight:800;letter-spacing:.04em;padding:6px 13px;border-radius:999px}
+  .status.ok{background:rgba(31,122,77,.1);color:var(--good)} .status.no{background:rgba(178,58,52,.1);color:var(--bad)}
+  .r-sub{color:var(--ink-2);font-size:15.5px;max-width:58ch;margin-top:6px}.r-sub b{color:var(--ink)}
+
+  .meter{margin-top:30px}
+  .meter .mt{display:flex;justify-content:space-between;font-size:11.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .track{position:relative;height:12px;border-radius:7px;background:var(--line-2);overflow:visible}
+  .fill{position:absolute;left:0;top:0;bottom:0;border-radius:7px;transition:width .25s,background .25s}
+  .fill.ok{background:var(--good)} .fill.no{background:var(--bad)}
+  .limit{position:absolute;top:-6px;bottom:-6px;width:1px;background:var(--gold)}
+  .limit b{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:800;color:var(--gold);white-space:nowrap}
+  .scale{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:8px}
+
+  .facts{display:flex;gap:44px;flex-wrap:wrap;margin:34px 0 8px}
+  .fact .fl{font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .fact .fv{font-size:23px;font-weight:900;letter-spacing:-.02em;margin-top:4px}
+  .fact .fs{font-size:12px;color:var(--muted);margin-top:1px}
+
+  .break{margin-top:34px}
+  .break h3{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+  .stack{display:flex;height:16px;border-radius:8px;overflow:hidden;gap:2px}
+  .stack span{height:100%}
+  .bl{display:flex;gap:26px;flex-wrap:wrap;margin-top:14px}
+  .bl .it{font-size:13px}
+  .bl .it i{width:10px;height:10px;border-radius:3px;display:inline-block;margin-right:8px;vertical-align:middle}
+  .bl .it .v{font-weight:800;font-variant-numeric:tabular-nums}
+  .bl .it .k{color:var(--ink-2)}
+
+  .note{margin-top:26px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);padding-top:16px;max-width:74ch}
+  .footlinks{display:flex;gap:20px;margin-top:24px}
+  .footlinks a{color:var(--accent);font-weight:800;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="step home" href="index.html"><small>Zur</small><b>Startseite</b></a>
+    <nav class="steps">
+      <a class="step" href="thema.html?t=real-estate"><small>Bereich</small><b>Immobilien</b></a>
+      <span class="step active"><small>Rechner</small><b>Tragbarkeit</b></span>
+    </nav>
+    <span class="spacer"></span>
+    <span class="lang">DE</span>
+    <span class="brand"><span class="b1">comb</span><span class="b2">invest</span></span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="head">
+    <div class="kicker">Wohneigentum · Tragbarkeit</div>
+    <h1>Können Sie sich Ihr Eigenheim leisten?</h1>
+    <p class="lead">Nach Schweizer Banken-Standard: kalkulatorischer Zins 5 %, Nebenkosten 1 % des Werts, Amortisation der 2. Hypothek. Die Wohnkosten dürfen höchstens ein Drittel Ihres Bruttoeinkommens betragen.</p>
+  </div>
+
+  <div class="grid">
+    <section aria-label="Eingaben">
+      <div class="group">
+        <div class="gt">Ihre Angaben</div>
+        <div class="field"><div class="lab"><span>Kaufpreis</span><b class="num" id="wertV">CHF 1'000'000</b></div>
+          <input type="range" id="wert" min="300000" max="3000000" step="25000" value="1000000"></div>
+        <div class="field"><div class="lab"><span>Eigenkapital</span><b class="num" id="ekV">CHF 200'000</b></div>
+          <input type="range" id="ek" min="0" max="1500000" step="10000" value="200000">
+          <div class="sub" id="ekSub">20 % des Kaufpreises</div></div>
+        <div class="field"><div class="lab"><span>Bruttoeinkommen / Jahr</span><b class="num" id="incV">CHF 150'000</b></div>
+          <input type="range" id="inc" min="60000" max="400000" step="5000" value="150000"></div>
+      </div>
+    </section>
+
+    <section class="result" aria-live="polite">
+      <div class="r-kick">Tragbarkeit (Wohnkosten / Einkommen)</div>
+      <div class="bighead">
+        <span class="r-big num" id="quote">—</span>
+        <span class="status" id="statusPill">—</span>
+      </div>
+      <div class="r-sub" id="rsub">—</div>
+
+      <div class="meter">
+        <div class="mt"><span>0 %</span><span>Wohnkosten-Quote</span><span>50 %</span></div>
+        <div class="track"><div class="fill" id="fill"></div><div class="limit" id="limit"><b>33.3 %</b></div></div>
+      </div>
+
+      <div class="facts">
+        <div class="fact"><div class="fl">Max. tragbarer Kaufpreis</div><div class="fv num" id="maxprice">—</div><div class="fs" id="maxpriceS">bei Ihrem Einkommen</div></div>
+        <div class="fact"><div class="fl">Belehnung</div><div class="fv num" id="ltv">—</div><div class="fs">max. 80 %</div></div>
+        <div class="fact"><div class="fl">Wohnkosten / Jahr</div><div class="fv num" id="totalcost">—</div><div class="fs">kalkulatorisch</div></div>
+      </div>
+
+      <div class="break">
+        <h3>Zusammensetzung der kalkulatorischen Wohnkosten</h3>
+        <div class="stack" id="stack"></div>
+        <div class="bl" id="blegend"></div>
+      </div>
+
+      <p class="note">Kalkulatorische Werte nach Banken-Standard (Zins 5 %, Nebenkosten 1 %, Amortisation der 2. Hypothek über 15 Jahre auf zwei Drittel des Werts). Mindest-Eigenkapital 20 % des Kaufpreises. Orientierung, keine Finanzierungszusage.</p>
+      <div class="footlinks">
+        <a href="thema.html?t=real-estate">← Zur Themenseite</a>
+        <a href="analyse.html">Zur Analyse</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  /* ===== Tragbarkeits-Engine (Port von engine/affordability-engine.mjs) ===== */
+  var RULES={kalkZins:5.0,nebenkostenSatz:1.0,amortJahre:15,maxBelehnung:80,ersteHypGrenze:66.6667,tragbarkeitsLimit:33.3334,minEigenkapital:20};
+  function affordability(inp){
+    var wert=inp.wert, ek=inp.eigenkapital, brutto=inp.bruttoeinkommenJahr;
+    var hypothek=Math.max(0,wert-ek), belehnung=wert>0?hypothek/wert*100:0;
+    var zinslast=hypothek*RULES.kalkZins/100, nebenkosten=wert*RULES.nebenkostenSatz/100;
+    var zweiteHyp=Math.max(0,hypothek-wert*RULES.ersteHypGrenze/100), amortisation=zweiteHyp/RULES.amortJahre;
+    var gesamtlast=zinslast+nebenkosten+amortisation, quote=brutto>0?gesamtlast/brutto*100:Infinity, ekQuote=wert>0?ek/wert*100:0;
+    var tragbar=quote<=RULES.tragbarkeitsLimit && belehnung<=RULES.maxBelehnung && ekQuote>=RULES.minEigenkapital;
+    return {hypothek:hypothek,belehnung:belehnung,zinslast:zinslast,nebenkosten:nebenkosten,zweiteHyp:zweiteHyp,amortisation:amortisation,gesamtlast:gesamtlast,quote:quote,ekQuote:ekQuote,tragbar:tragbar};
+  }
+  function maxAffordable(brutto,ek){
+    var byEquity=ek/(RULES.minEigenkapital/100), lo=0, hi=byEquity;
+    for(var k=0;k<60;k++){ var mid=(lo+hi)/2, r=affordability({wert:mid,eigenkapital:ek,bruttoeinkommenJahr:brutto});
+      if(r.quote<=RULES.tragbarkeitsLimit && r.belehnung<=RULES.maxBelehnung) lo=mid; else hi=mid; }
+    return lo;
+  }
+
+  var S={wert:1000000, ek:200000, inc:150000};
+  var chf=function(n){return "CHF "+Math.round(n).toLocaleString("de-CH");};
+  function bind(id,key,after){ var el=document.getElementById(id);
+    el.addEventListener("input",function(){ S[key]=+this.value; if(after)after(); render(); }); }
+  bind("wert","wert"); bind("ek","ek"); bind("inc","inc");
+
+  function render(){
+    document.getElementById("wertV").textContent=chf(S.wert);
+    document.getElementById("ekV").textContent=chf(S.ek);
+    document.getElementById("incV").textContent=chf(S.inc);
+    document.getElementById("ekSub").textContent=(S.wert>0?Math.round(S.ek/S.wert*100):0)+" % des Kaufpreises"+(S.ek/S.wert<0.2?" — unter 20 %":"");
+
+    var r=affordability({wert:S.wert,eigenkapital:S.ek,bruttoeinkommenJahr:S.inc});
+    var q=isFinite(r.quote)?r.quote:0;
+    var big=document.getElementById("quote"); big.textContent=(isFinite(r.quote)?r.quote.toFixed(1):"—")+" %";
+    big.className="r-big num "+(r.tragbar?"ok":"no");
+    var pill=document.getElementById("statusPill"); pill.className="status "+(r.tragbar?"ok":"no");
+    pill.textContent=r.tragbar?"✓ Tragbar":"Nicht tragbar";
+
+    var reasons=[];
+    if(r.ekQuote<RULES.minEigenkapital) reasons.push("Eigenkapital unter 20 %");
+    if(r.belehnung>RULES.maxBelehnung) reasons.push("Belehnung über 80 %");
+    if(r.quote>RULES.tragbarkeitsLimit) reasons.push("Wohnkosten über einem Drittel des Einkommens");
+    var rs=document.getElementById("rsub");
+    if(r.tragbar){
+      rs.innerHTML="Die kalkulatorischen Wohnkosten von <b>"+chf(r.gesamtlast)+"</b> pro Jahr liegen bei <b>"+r.quote.toFixed(1)+" %</b> Ihres Bruttoeinkommens — innerhalb des Limits von einem Drittel.";
+    } else {
+      rs.innerHTML="Aktuell nicht tragbar: "+reasons.join(", ")+". Zielgrösse: Wohnkosten ≤ 33.3 % des Einkommens, Eigenkapital ≥ 20 %.";
+    }
+
+    // meter
+    var scaleMax=50, fill=document.getElementById("fill");
+    fill.style.width=Math.min(100,q/scaleMax*100)+"%";
+    fill.className="fill "+(r.tragbar?"ok":"no");
+    document.getElementById("limit").style.left=(RULES.tragbarkeitsLimit/scaleMax*100)+"%";
+
+    // facts
+    var mx=maxAffordable(S.inc,S.ek);
+    document.getElementById("maxprice").textContent=chf(mx);
+    document.getElementById("ltv").textContent=r.belehnung.toFixed(0)+" %";
+    document.getElementById("totalcost").textContent=chf(r.gesamtlast);
+
+    // breakdown stack
+    var parts=[["Zinslast (kalk. 5 %)",r.zinslast,"var(--seg-1)"],["Amortisation",r.amortisation,"var(--seg-2)"],["Nebenkosten (1 %)",r.nebenkosten,"var(--seg-3)"]];
+    var tot=r.gesamtlast||1, stack=document.getElementById("stack"); stack.innerHTML="";
+    parts.forEach(function(p){ var s=document.createElement("span"); s.style.width=(p[1]/tot*100)+"%"; s.style.background=p[2]; stack.appendChild(s); });
+    var lg=document.getElementById("blegend"); lg.innerHTML="";
+    parts.forEach(function(p){ var d=document.createElement("div"); d.className="it";
+      d.innerHTML='<i style="background:'+p[2]+'"></i><span class="v num">'+chf(p[1])+'</span> <span class="k">'+p[0]+'</span>'; lg.appendChild(d); });
+  }
+  render();
+})();
+</script>
+</body>
+</html>
