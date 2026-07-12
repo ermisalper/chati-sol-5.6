@@ -534,7 +534,11 @@
     ranked.forEach(function(item,i){
       var a=item.a, v=item.v, p=(v/5).toFixed(3), col=COLORS[v];
       var t=document.createElement("a");
-      t.className="tile"+(i===0?" big":""); t.href="thema.html?t="+a.key;
+      t.className="tile"+(i===0?" big":"");
+      if(a.key==="health"){
+        var yob=A.alter?(new Date()).getFullYear()-Number(A.alter):"";
+        t.href="franchise.html?plz="+encodeURIComponent(A.plz||"")+"&yob="+encodeURIComponent(yob)+"&franchise=300&model=base";
+      }else t.href="thema.html?t="+a.key;
       t.innerHTML='<div class="cover c-'+a.key+'"><span class="rank">Priorität '+(i+1)+'</span></div>'+
         '<div class="info"><span class="miniring" style="--p:'+p+';--c:'+col+'"></span>'+
         '<div><h3>'+a.name+'</h3><span class="start">Beratung starten →</span></div></div>';
