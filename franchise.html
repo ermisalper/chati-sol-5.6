@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <title>Combinvest — Franchise-Vergleich</title>
 <meta name="description" content="Franchise-Vergleich auf Basis der offiziellen BAG-Prämien 2026.">
 <style>
@@ -19,7 +20,7 @@
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
-  body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  body{font-family:Manrope,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     background:var(--page);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased;}
   .num{font-variant-numeric:tabular-nums}
   a{color:inherit;text-decoration:none}
@@ -57,11 +58,11 @@
   .ctl{margin-bottom:18px}
   .ctl>label{display:block;font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
   .hint{color:var(--muted);font-weight:600;text-transform:none;letter-spacing:0}
-  select{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);
+  select,input[type=text],input[type=number]{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);
     color:var(--ink);font:inherit;font-weight:700;appearance:none;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' stroke='%233A57F5' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat:no-repeat;background-position:right 13px center}
-  select:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--royal)}
+  select:focus,input[type=text]:focus,input[type=number]:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--royal)}
   .seg{display:flex;gap:5px;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:5px;flex-wrap:wrap}
   .seg button{flex:1 1 auto;min-width:46px;border:0;background:transparent;color:var(--ink-2);font:inherit;font-weight:800;
     font-size:13px;padding:10px 8px;border-radius:10px;cursor:pointer;transition:.12s;letter-spacing:.02em}
@@ -114,6 +115,10 @@
   tr.cur td{background:var(--royal-050);font-weight:800}
   tr.best td{color:var(--good)}
   .hidden{display:none}
+  .fieldnote{font-size:11.5px;color:var(--muted);margin:7px 0 0}
+  .priminfo-panel{margin-top:16px;border:1px solid #dce6ff;background:var(--royal-050);border-radius:14px;padding:14px}
+  .priminfo-panel strong{display:block;font-size:13px}.priminfo-panel p{font-size:12px;color:var(--ink-2);margin:5px 0 10px}
+  .primary-link{display:inline-flex;background:var(--royal);color:#fff;border-radius:9px;padding:9px 12px;font-size:12px;font-weight:800}
 </style>
 </head>
 <body>
@@ -126,7 +131,6 @@
       <span class="step active"><small>Schnellanalyse</small><b>Franchise-Vergleich</b></span>
     </nav>
     <span class="spacer"></span>
-    <span class="lang">DE</span>
     <span class="brand"><span class="b1">comb</span><span class="b2">invest</span></span>
   </div>
 </header>
@@ -142,6 +146,17 @@
   <div class="grid">
     <section class="card" aria-label="Eingaben">
       <h2>Ihre Situation</h2>
+
+      <div class="ctl">
+        <label for="plz">Wohnort / PLZ</label>
+        <input id="plz" type="text" inputmode="numeric" maxlength="4" placeholder="z. B. 8001">
+        <p class="fieldnote">Für den exakten Vergleich bestimmt Priminfo daraus die Prämienregion.</p>
+      </div>
+
+      <div class="ctl">
+        <label for="yob">Geburtsjahr</label>
+        <input id="yob" type="number" min="1900" max="2026" placeholder="z. B. 1992">
+      </div>
 
       <div class="ctl">
         <label for="kt">Wohnkanton</label>
@@ -171,9 +186,31 @@
       </div>
 
       <div class="ctl">
+        <label for="insurer">Aktuelle Krankenkasse <span class="hint">optional</span></label>
+        <input id="insurer" type="text" placeholder="z. B. Helsana, CSS, Die Mobiliar">
+      </div>
+
+      <div class="ctl">
+        <label for="model">Versicherungsmodell</label>
+        <select id="model">
+          <option value="base">Standardmodell / freie Arztwahl</option>
+          <option value="ham">Hausarzt- / GP-Modell</option>
+          <option value="hmo">HMO-Modell</option>
+          <option value="div">Telmed / weiteres Modell</option>
+        </select>
+        <p class="fieldnote">Die lokale Orientierung nutzt das Standardmodell. Das gewählte Modell wird an Priminfo übergeben.</p>
+      </div>
+
+      <div class="ctl">
         <label for="cost">Erwartete Gesundheitskosten pro Jahr</label>
         <input type="range" id="cost" min="0" max="8000" step="100" value="1200">
         <div class="rangeval"><span>CHF 0</span><b class="num" id="costVal">CHF 1'200</b><span>CHF 8'000</span></div>
+      </div>
+
+      <div class="priminfo-panel">
+        <strong>Exakte Prämien bei Priminfo</strong>
+        <p>Alle verfügbaren Kassen, Modelle und die zur PLZ gehörende Prämienregion vergleichen.</p>
+        <a class="primary-link" id="priminfoExact" href="https://www.priminfo.admin.ch/de/praemien" target="_blank" rel="noopener">Priminfo-Vergleich öffnen ↗</a>
       </div>
     </section>
 
@@ -239,7 +276,7 @@
   var MAXC = 8000;
   var SER = ["--s1","--s2","--s3"];
 
-  var state = {kt:"ZH", age:"ERW", unf:"MIT-UNF", fr:300, c:1200};
+  var state = {kt:"ZH", age:"ERW", unf:"MIT-UNF", fr:300, c:1200, plz:"", yob:"", insurer:"", model:"base"};
 
   function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
   function fmt(n){return "CHF " + Math.round(n).toLocaleString("de-CH");}
@@ -260,13 +297,38 @@
   ktSel.value = state.kt;
   ktSel.addEventListener("change", function(){ state.kt=this.value; clampFr(); render(); });
 
+  function ageFromBirthYear(yob){
+    var age=(new Date()).getFullYear()-Number(yob);
+    return age<=18?"KIN":age<=25?"JUG":"ERW";
+  }
+  function updatePriminfoLink(){
+    var params=new URLSearchParams();
+    params.set("coverage[0]",state.unf==="MIT-UNF"?"1":"0");
+    params.set("franchise[0]",String(state.fr));
+    params.set("models[0]",state.model); params.set("plan",state.model);
+    if(state.yob) params.set("yob[0]",state.yob);
+    document.getElementById("priminfoExact").href="https://www.priminfo.admin.ch/de/praemien?"+params.toString();
+  }
+  function syncProfileFields(){
+    state.plz=document.getElementById("plz").value.trim();
+    state.yob=document.getElementById("yob").value.trim();
+    state.insurer=document.getElementById("insurer").value.trim();
+    state.model=document.getElementById("model").value;
+    if(state.yob && Number(state.yob)>=1900 && Number(state.yob)<=new Date().getFullYear()){
+      state.age=ageFromBirthYear(state.yob); clampFr(); buildFrSeg();
+      document.querySelectorAll("#ageSeg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.age===state.age);});
+    }
+    updatePriminfoLink(); render();
+  }
+  ["plz","yob","insurer","model"].forEach(function(id){document.getElementById(id).addEventListener("change",syncProfileFields);});
+
   document.getElementById("ageSeg").addEventListener("click", function(e){
     var b=e.target.closest("button"); if(!b) return;
-    state.age=b.dataset.age; segPress(this,b); clampFr(); buildFrSeg(); render();
+    state.age=b.dataset.age; segPress(this,b); clampFr(); buildFrSeg(); updatePriminfoLink(); render();
   });
   document.getElementById("unfSeg").addEventListener("click", function(e){
     var b=e.target.closest("button"); if(!b) return;
-    state.unf=b.dataset.unf; segPress(this,b); render();
+    state.unf=b.dataset.unf; segPress(this,b); updatePriminfoLink(); render();
   });
   function segPress(group,btn){ group.querySelectorAll("button").forEach(function(x){x.setAttribute("aria-pressed", x===btn);}); }
 
@@ -275,7 +337,7 @@
     FRAN[state.age].forEach(function(f){
       var b=document.createElement("button"); b.textContent=fmt0(f); b.dataset.fr=f;
       b.setAttribute("aria-pressed", f===state.fr);
-      b.addEventListener("click", function(){ state.fr=f; segPress(seg,b); render(); });
+      b.addEventListener("click", function(){ state.fr=f; segPress(seg,b); updatePriminfoLink(); render(); });
       seg.appendChild(b);
     });
   }
@@ -460,7 +522,27 @@
     renderLine(); renderBar(); renderTable(best);
     // update fr seg pressed
     document.querySelectorAll("#frSeg button").forEach(function(b){b.setAttribute("aria-pressed", (+b.dataset.fr)===state.fr);});
+    updatePriminfoLink();
   }
+
+  (function prefillFromProfile(){
+    var q=new URLSearchParams(location.search), stored={};
+    try{stored=JSON.parse(localStorage.getItem("combinvest.customerProfile.v1")||"{}");}catch(e){}
+    var base=stored.basisdaten||{}, answers=stored.answers||{};
+    state.plz=q.get("plz")||base.wohnort_plz||answers.plz||"";
+    state.yob=q.get("yob")||"";
+    if(!state.yob && answers.alter) state.yob=String((new Date()).getFullYear()-Number(answers.alter));
+    state.unf=q.get("accident")==="none"?"OHN-UNF":"MIT-UNF";
+    state.fr=Number(q.get("franchise"))||300;
+    state.model=q.get("model")||"base";
+    document.getElementById("plz").value=state.plz;
+    document.getElementById("yob").value=state.yob;
+    document.getElementById("model").value=state.model;
+    if(state.yob) state.age=ageFromBirthYear(state.yob);
+    clampFr();
+    document.querySelectorAll("#ageSeg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.age===state.age);});
+    document.querySelectorAll("#unfSeg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.unf===state.unf);});
+  })();
 
   buildFrSeg();
   render();
