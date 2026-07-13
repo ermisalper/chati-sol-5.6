@@ -270,6 +270,7 @@
   </section>
 </div>
 
+<script src="crm-session.js"></script>
 <script>
 (function(){
   "use strict";
@@ -302,7 +303,7 @@
       opts:[["unter3","Unter 3 Monate"],["3bis6","3–6 Monate"],["ueber6","Über 6 Monate"]]}
   ];
 
-  var STORAGE_KEY="combinvest.customerProfile.v1";
+  var STORAGE_KEY=window.CombinvestCRM?CombinvestCRM.storageKey("analysis"):"combinvest.customerProfile.v1";
   var state={step:1,question:0,answers:{},answered:{},contracts:{},notizen:[],updatedAt:null};
   function defaults(){
     Q.forEach(function(q){
@@ -312,7 +313,9 @@
   function loadState(){
     defaults();
     try{
-      var saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+      var raw=localStorage.getItem(STORAGE_KEY);
+      if(!raw&&window.CombinvestCRM&&CombinvestCRM.customerId==="local-demo") raw=localStorage.getItem("combinvest.customerProfile.v1");
+      var saved=JSON.parse(raw||"null");
       if(!saved||!saved.answers) return;
       state.step=Math.max(1,Math.min(3,+saved.step||1));
       state.question=Math.max(0,Math.min(Q.length-1,+saved.question||0));
@@ -597,7 +600,10 @@
     w.document.write('<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>combinvest Beratungsprotokoll</title><style>@page{size:A4;margin:16mm}body{font:12px Arial;color:#0f1b36}h1{color:#3a57f5;margin-bottom:2px}h2{margin-top:24px;border-bottom:2px solid #dce3ff;padding-bottom:5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid #e4e9f5;padding:7px}th{width:48%}.meta{color:#51607a}.no-print{margin:16px 0;padding:10px 16px;background:#3a57f5;color:white;border:0;border-radius:6px}@media print{.no-print{display:none}}</style></head><body><button class="no-print" onclick="window.print()">Als PDF speichern</button><h1>combinvest Beratungsprotokoll</h1><div class="meta">Erstellt am '+esc(profile.erstellt_am)+' · Profil-ID '+esc(profile.id)+'</div><h2>Prioritäten & Empfehlungen</h2><table><tr><th>Rang</th><th>Bereich</th><th>Score</th><th>Relevanz</th></tr>'+scoreRows+'</table><h2>Antworten (19 Fragen)</h2><table>'+answerRows+'</table><h2>Bestehende Verträge</h2><ul>'+contracts+'</ul><p class="meta">Hinweis: Dieses Protokoll dokumentiert das Profiling und ersetzt keine persönliche Finanz- oder Versicherungsberatung.</p><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
     w.document.close();
   }
-  document.getElementById("finishBtn").addEventListener("click",function(){ saveState(); window.location.href="index.html"; });
+  document.getElementById("finishBtn").addEventListener("click",function(){
+    saveState();this.textContent="✓ Im Kundenprofil gespeichert";this.disabled=true;
+    var self=this;setTimeout(function(){self.disabled=false;self.textContent="▢ Profiling erneut speichern";},1800);
+  });
   document.getElementById("pdfBtn").addEventListener("click",exportPdf);
 
   /* init */

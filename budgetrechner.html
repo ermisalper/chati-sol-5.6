@@ -144,6 +144,7 @@
   <p class="note">Richtwert: Eine Sparquote ab 15&ndash;20&nbsp;% gilt als solide Basis. Betr&auml;ge werden gerundet dargestellt, intern wird exakt gerechnet.</p>
 </main>
 
+<script src="crm-session.js"></script>
 <script>
 (function(){
   "use strict";
@@ -151,8 +152,8 @@
   function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];}); }
   function fmt0(n){ return "CHF "+Math.round(Number(n)||0).toLocaleString("de-CH"); }
 
-  var KEY="combinvest.budget.v1";
-  var PROFILE_KEY="combinvest.customerProfile.v1";
+  var KEY=window.CombinvestCRM?CombinvestCRM.storageKey("budget"):"combinvest.budget.v1";
+  var PROFILE_KEY=window.CombinvestCRM?CombinvestCRM.storageKey("analysis"):"combinvest.customerProfile.v1";
   var COL={inc:"#188A57",budget:"#3A57F5"};
   var PAL=["#EE6A20","#256ABF","#7C5CBF","#159B8A","#C2554E","#3F7CC0"];
   var TRASH='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16"/><path d="M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2"/><path d="M6 7l1 13a1 1 0 001 1h8a1 1 0 001-1l1-13"/></svg>';
