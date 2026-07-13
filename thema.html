@@ -154,24 +154,27 @@
   /* --- tool registry (Beschreibungen eigene, knappe Formulierung) --- */
   var TOOLS = {
     budget:      {t:"Budget",         ic:"coins",  d:"Erfassen Sie Einnahmen und Ausgaben — der Geldfluss und Ihre Sparquote auf einen Blick.", href:"budgetrechner.html", live:true},
-    sparrechner: {t:"Sparrechner",    ic:"chart",  d:"Sehen Sie, wie sich Ihr Geld über die Zeit entwickelt — in mehreren Szenarien.", href:"#"},
-    zins:        {t:"Zinsvergleich",  ic:"scale",  d:"Vergleichen Sie, welches Endergebnis Sie mit verschiedenen Zinssätzen erreichen.", href:"#"},
-    startwarten: {t:"Starten oder Warten", ic:"clock", d:"Welchen Unterschied macht es, sofort statt später mit dem Sparen zu beginnen?", href:"#"},
-    anleger:     {t:"Anlegerprofil",  ic:"gauge",  d:"Welche Anlageform passt zu Kenntnissen, Risikoneigung und finanzieller Situation?", href:"#"},
+    sparrechner: {t:"Sparrechner",    ic:"chart",  d:"Sehen Sie, wie sich Ihr Geld über die Zeit entwickelt — in mehreren Szenarien.", href:"vermoegensrechner.html?tool=sparen", live:true},
+    zins:        {t:"Zinsvergleich",  ic:"scale",  d:"Vergleichen Sie, welches Endergebnis Sie mit verschiedenen Zinssätzen erreichen.", href:"vermoegensrechner.html?tool=zins", live:true},
+    startwarten: {t:"Starten oder Warten", ic:"clock", d:"Welchen Unterschied macht es, sofort statt später mit dem Sparen zu beginnen?", href:"vermoegensrechner.html?tool=start", live:true},
+    anleger:     {t:"Anlegerprofil",  ic:"gauge",  d:"Welche Anlageform passt zu Kenntnissen, Risikoneigung und finanzieller Situation?", href:"anlegerprofil.html", live:true},
     rente:       {t:"AHV-Rentenrechner",  ic:"doc",    d:"Schätzen Sie Ihre AHV-Rente mit durchschnittlichem Jahreseinkommen und Rentenskala 44.", href:"rentenrechner.html", live:true},
     vorsorge:    {t:"Vorsorgerechner", ic:"target", d:"Wie viel bis zur Rente ansparen, um später Ihren Wunschbetrag entnehmen zu können?", href:"vorsorgerechner.html", live:true},
-    steuer3a:    {t:"Steuereffekte Einzahlung 3a", ic:"calc", d:"Welche Steuerwirkung hat die regelmässige Einzahlung in die Säule 3a?", href:"#"},
+    steuer3a:    {t:"Steuereffekte Einzahlung 3a", ic:"calc", d:"Welche Steuerwirkung hat die regelmässige Einzahlung in die Säule 3a?", href:"vermoegensrechner.html?tool=3a", live:true},
     luecke:      {t:"Vorsorgelücke",  ic:"gauge",  d:"Vergleichen Sie AHV-Schätzung und gewünschten Ruhestandsbedarf.", href:"rentenrechner.html", live:true},
     franchise:   {t:"Franchise-Vergleich", ic:"heart", d:"Vergleichen Sie Ihre Grundversicherungsprämie und sehen Sie Ihr Sparpotenzial.", href:"franchise.html", live:true},
     tragbar:     {t:"Wohnrechner — Tragbarkeit", ic:"home", d:"Können Sie sich die Finanzierung Ihrer Wunschimmobilie leisten?", href:"immobilienrechner.html", live:true},
-    steuer:      {t:"Steuerrechner",  ic:"calc",   d:"Wie viel bleibt nach Steuern und Sozialabgaben von Ihrem Einkommen?", href:"#"}
+    steuer:      {t:"Steuerwirkung",  ic:"calc",   d:"Schätzen Sie die Wirkung eines frei wählbaren Grenzsteuersatzes.", href:"vermoegensrechner.html?tool=steuer", live:true},
+    inflation:   {t:"Inflationsrechner", ic:"chart", d:"Sehen Sie, wie Inflation die künftige Kaufkraft eines Betrags verändert.", href:"vermoegensrechner.html?tool=inflation", live:true},
+    kosten:      {t:"Anlagekosten (TER)", ic:"calc", d:"Vergleichen Sie die Vermögensentwicklung vor und nach laufenden Produktkosten.", href:"vermoegensrechner.html?tool=kosten", live:true},
+    sparziel:    {t:"Sparzielrechner", ic:"target", d:"Berechnen Sie die monatliche Sparrate für Ihr persönliches Zielvermögen.", href:"vermoegensrechner.html?tool=ziel", live:true}
   };
 
   /* --- theme config --- */
   var THEMES = {
     "investment": {name:"Vermögen aufbauen", figure:"chart", badge:"coins",
       slides:[{k:"Vermögen aufbauen", h:"Tiefe Zinsen"},{k:"Vermögen aufbauen", h:"Der Zinseszins‑Effekt"}],
-      tools:["budget","sparrechner","zins","startwarten","anleger"]},
+      tools:["budget","sparrechner","zins","startwarten","anleger","inflation","kosten","sparziel"]},
     "pensiongap": {name:"Pension vorsorgen", figure:"coins", badge:"tele",
       slides:[{k:"Altersvorsorge", bullets:["Alters­demografie","Sinkende Geburtenraten","Späterer Eintritt ins Berufsleben","Höhere Lebens­erwartung"]}],
       tools:["budget","rente","vorsorge","startwarten","sparrechner","steuer3a"]},
