@@ -6,8 +6,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<title>Combinvest — Finanzstatus Check</title>
-<meta name="description" content="Combinvest Analysetool: Finanzstatus Check mit Live-Risikoberechnung, Vertragscheck und persönlicher Empfehlung.">
+<title>combinvest — Finanzstatus Check</title>
+<meta name="description" content="combinvest Analysetool: Finanzstatus Check mit Live-Risikoberechnung, Vertragscheck und persönlicher Empfehlung.">
 <style>
   :root{
     --royal:#4285F4; --royal-deep:#2F6FD9; --royal-050:#F1F6FF; --royal-100:#DCEAFF;
@@ -40,8 +40,8 @@
   .steps{display:flex;gap:8px;flex-wrap:wrap}
   .nav .spacer{flex:1}
   .lang{font-weight:800;font-size:12px;letter-spacing:.12em;color:var(--ink-2)}
-  .brand{display:flex;align-items:center;font-weight:900;font-size:28px;line-height:.7;letter-spacing:-.065em}
-  .brand-mark{display:none}.brand-word{display:flex;flex-direction:column;gap:1px}
+  .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:25px;line-height:.72;letter-spacing:-.055em}
+  .brand-mark{display:grid;width:34px;height:38px;place-items:center;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:var(--royal);color:#fff;font-size:17px;line-height:1;letter-spacing:0}.brand-word{display:flex;flex-direction:column;gap:1px}
   .brand .b1{color:#05080f;display:block}.brand .b2{color:#23488d;display:block}
 
   main{padding:24px 0 70px}
@@ -143,7 +143,10 @@
   .tile{grid-column:span 3;background:#fff;border:0;border-radius:3px;box-shadow:none;overflow:hidden;display:flex;flex-direction:column;min-height:255px;transition:transform .16s,box-shadow .16s;cursor:pointer}
   .tile:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(27,58,109,.16)}
   .tile.big{grid-column:span 6;min-height:385px}.tile:nth-child(2){grid-column:span 3;min-height:385px}
-  .tile .cover{flex:1;position:relative;overflow:hidden}.tile .cover:after{content:"";position:absolute;width:180px;height:180px;border:30px solid rgba(255,255,255,.12);border-radius:50%;right:-58px;top:-52px}.tile.big .cover:before{content:"";position:absolute;width:46%;height:86%;left:28%;bottom:-10%;border-radius:48% 48% 8% 8%;background:linear-gradient(90deg,rgba(7,20,45,.55),rgba(7,20,45,.08));filter:blur(1px)}
+  .tile .cover{flex:1;position:relative;overflow:hidden;background-color:#4264c7;background-size:cover;background-position:center;isolation:isolate;transition:transform .45s ease}
+  .tile:hover .cover{transform:scale(1.025)}
+  .tile .cover:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(135deg,rgba(15,27,54,.76),rgba(58,87,245,.42) 58%,rgba(30,181,211,.28));mix-blend-mode:multiply}
+  .tile .cover:after{display:none}
   .tile .cover .rank{display:none}
   .tile .info{position:relative;margin:-68px 20px 20px;background:rgba(255,255,255,.93);padding:16px 18px;display:flex;align-items:center;gap:14px;min-height:74px;z-index:1}
   .tile.big .info{margin:-86px 32px 32px;padding:20px 22px;min-height:98px}
@@ -154,7 +157,7 @@
   .miniring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff}
   @media(max-width:900px){.tile,.tile.big{grid-column:span 6}}
   @media(max-width:560px){.tile,.tile.big{grid-column:span 12}}
-  .c-pensiongap{background:#dce5fa}.c-investment{background:#4e7cf7}.c-property-creation{background:#6b82ce}.c-health{background:#96d2e9}.c-real-estate{background:#22a9da}.c-children{background:#aac4d7}.c-tax-advantage{background:#87dddd}.c-values-protection{background:#51c0e7}
+  .c-pensiongap{background-color:#dce5fa}.c-investment{background-color:#4e7cf7}.c-property-creation{background-color:#6b82ce}.c-health{background-color:#96d2e9}.c-real-estate{background-color:#22a9da}.c-children{background-color:#aac4d7}.c-tax-advantage{background-color:#87dddd}.c-values-protection{background-color:#51c0e7}
 </style>
 </head>
 <body>
@@ -168,7 +171,7 @@
       <button class="step" data-step="3"><small>Schritt 3</small><b>Risikoanalyse</b></button>
     </nav>
     <span class="spacer"></span>
-    <span class="brand" aria-label="Combinvest"><span class="brand-word"><span class="b1">comb</span><span class="b2">invest</span></span></span>
+    <span class="brand" aria-label="combinvest"><span class="brand-mark" aria-hidden="true">C</span><span class="brand-word"><span class="b1">comb</span><span class="b2">invest</span></span></span>
   </div>
 </header>
 
@@ -177,7 +180,7 @@
   <!-- ===================== STEP 1 : Finanzstatus Check (Wizard) ===================== -->
   <section id="panel1" class="panel">
     <div class="head">
-      <div class="kicker">Combinvest · Finanzstatus Check</div>
+      <div class="kicker">combinvest · Finanzstatus Check</div>
     </div>
     <div class="wizgrid">
       <section class="card" aria-label="Fragebogen">
@@ -267,7 +270,7 @@
 (function(){
   "use strict";
 
-  /* =============== Fragenkatalog (Combinvest Finanzstatus Check, 19 Fragen) =============== */
+  /* =============== Fragenkatalog (combinvest Finanzstatus Check, 19 Fragen) =============== */
   var Q = [
     {id:"geschlecht", t:"Geschlecht", type:"single", opts:[["M","Männlich"],["W","Weiblich"]]},
     {id:"alter", t:"Wann sind Sie geboren?", sub:"Ihr Alter in Jahren", type:"slider", min:18, max:80, def:35, fmt:function(v){return v+" Jahre";}},
@@ -527,6 +530,16 @@
 
   /* =============== Step 3: Auswertung =============== */
   var CALC_LINK = { "health":"franchise.html", "pensiongap":"vorsorgerechner.html", "real-estate":"immobilienrechner.html" };
+  var THEME_IMAGES={
+    "pensiongap":"https://images.unsplash.com/photo-1474978528675-4a50a4508dc3?auto=format&fit=crop&w=1400&q=82",
+    "investment":"https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1400&q=82",
+    "property-creation":"https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1400&q=82",
+    "health":"https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=82",
+    "real-estate":"https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=82",
+    "children":"https://images.unsplash.com/photo-1602030028438-4cf153cbae9e?auto=format&fit=crop&w=1400&q=82",
+    "tax-advantage":"https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=1400&q=82",
+    "values-protection":"https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=82"
+  };
   function renderThemes(){
     var s=scores();
     var ranked=AREAS.map(function(a){return {a:a, v:s[a.key]};}).sort(function(x,y){return y.v-x.v;});
@@ -542,6 +555,7 @@
       t.innerHTML='<div class="cover c-'+a.key+'"><span class="rank">Priorität '+(i+1)+'</span></div>'+
         '<div class="info"><span class="miniring" style="--p:'+p+';--c:'+col+'"></span>'+
         '<div><h3>'+a.name+'</h3><span class="start">Beratung starten →</span></div></div>';
+      t.querySelector(".cover").style.backgroundImage='url("'+THEME_IMAGES[a.key]+'")';
       host.appendChild(t);
     });
   }
@@ -576,7 +590,7 @@
     var contracts=Object.keys(chosen).length?Object.keys(chosen).map(function(p){return "<li><b>"+esc(p)+"</b> — Pol.-Nr. "+esc(chosen[p].pol||"—")+", Ablauf "+esc(chosen[p].abl||"—")+"</li>";}).join(""):"<li>Keine bestehenden Produkte erfasst</li>";
     var w=window.open("","_blank");
     if(!w){alert("Bitte Pop-ups erlauben, um das PDF zu erstellen.");return;}
-    w.document.write('<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>Combinvest Beratungsprotokoll</title><style>@page{size:A4;margin:16mm}body{font:12px Arial;color:#0f1b36}h1{color:#3a57f5;margin-bottom:2px}h2{margin-top:24px;border-bottom:2px solid #dce3ff;padding-bottom:5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid #e4e9f5;padding:7px}th{width:48%}.meta{color:#51607a}.no-print{margin:16px 0;padding:10px 16px;background:#3a57f5;color:white;border:0;border-radius:6px}@media print{.no-print{display:none}}</style></head><body><button class="no-print" onclick="window.print()">Als PDF speichern</button><h1>Combinvest Beratungsprotokoll</h1><div class="meta">Erstellt am '+esc(profile.erstellt_am)+' · Profil-ID '+esc(profile.id)+'</div><h2>Prioritäten & Empfehlungen</h2><table><tr><th>Rang</th><th>Bereich</th><th>Score</th><th>Relevanz</th></tr>'+scoreRows+'</table><h2>Antworten (19 Fragen)</h2><table>'+answerRows+'</table><h2>Bestehende Verträge</h2><ul>'+contracts+'</ul><p class="meta">Hinweis: Dieses Protokoll dokumentiert das Profiling und ersetzt keine persönliche Finanz- oder Versicherungsberatung.</p><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
+    w.document.write('<!doctype html><html lang="de-CH"><head><meta charset="utf-8"><title>combinvest Beratungsprotokoll</title><style>@page{size:A4;margin:16mm}body{font:12px Arial;color:#0f1b36}h1{color:#3a57f5;margin-bottom:2px}h2{margin-top:24px;border-bottom:2px solid #dce3ff;padding-bottom:5px}table{width:100%;border-collapse:collapse}th,td{text-align:left;border-bottom:1px solid #e4e9f5;padding:7px}th{width:48%}.meta{color:#51607a}.no-print{margin:16px 0;padding:10px 16px;background:#3a57f5;color:white;border:0;border-radius:6px}@media print{.no-print{display:none}}</style></head><body><button class="no-print" onclick="window.print()">Als PDF speichern</button><h1>combinvest Beratungsprotokoll</h1><div class="meta">Erstellt am '+esc(profile.erstellt_am)+' · Profil-ID '+esc(profile.id)+'</div><h2>Prioritäten & Empfehlungen</h2><table><tr><th>Rang</th><th>Bereich</th><th>Score</th><th>Relevanz</th></tr>'+scoreRows+'</table><h2>Antworten (19 Fragen)</h2><table>'+answerRows+'</table><h2>Bestehende Verträge</h2><ul>'+contracts+'</ul><p class="meta">Hinweis: Dieses Protokoll dokumentiert das Profiling und ersetzt keine persönliche Finanz- oder Versicherungsberatung.</p><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>');
     w.document.close();
   }
   document.getElementById("finishBtn").addEventListener("click",function(){ saveState(); window.location.href="index.html"; });
