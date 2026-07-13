@@ -143,7 +143,10 @@
   .tile{grid-column:span 3;background:#fff;border:0;border-radius:3px;box-shadow:none;overflow:hidden;display:flex;flex-direction:column;min-height:255px;transition:transform .16s,box-shadow .16s;cursor:pointer}
   .tile:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(27,58,109,.16)}
   .tile.big{grid-column:span 6;min-height:385px}.tile:nth-child(2){grid-column:span 3;min-height:385px}
-  .tile .cover{flex:1;position:relative;overflow:hidden}.tile .cover:after{content:"";position:absolute;width:180px;height:180px;border:30px solid rgba(255,255,255,.12);border-radius:50%;right:-58px;top:-52px}.tile.big .cover:before{content:"";position:absolute;width:46%;height:86%;left:28%;bottom:-10%;border-radius:48% 48% 8% 8%;background:linear-gradient(90deg,rgba(7,20,45,.55),rgba(7,20,45,.08));filter:blur(1px)}
+  .tile .cover{flex:1;position:relative;overflow:hidden;background-color:#4264c7;background-size:cover;background-position:center;isolation:isolate;transition:transform .45s ease}
+  .tile:hover .cover{transform:scale(1.025)}
+  .tile .cover:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(135deg,rgba(15,27,54,.76),rgba(58,87,245,.42) 58%,rgba(30,181,211,.28));mix-blend-mode:multiply}
+  .tile .cover:after{content:"";position:absolute;width:180px;height:180px;border:30px solid rgba(255,255,255,.14);border-radius:50%;right:-58px;top:-52px;z-index:0}
   .tile .cover .rank{display:none}
   .tile .info{position:relative;margin:-68px 20px 20px;background:rgba(255,255,255,.93);padding:16px 18px;display:flex;align-items:center;gap:14px;min-height:74px;z-index:1}
   .tile.big .info{margin:-86px 32px 32px;padding:20px 22px;min-height:98px}
@@ -154,7 +157,7 @@
   .miniring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:#fff}
   @media(max-width:900px){.tile,.tile.big{grid-column:span 6}}
   @media(max-width:560px){.tile,.tile.big{grid-column:span 12}}
-  .c-pensiongap{background:#dce5fa}.c-investment{background:#4e7cf7}.c-property-creation{background:#6b82ce}.c-health{background:#96d2e9}.c-real-estate{background:#22a9da}.c-children{background:#aac4d7}.c-tax-advantage{background:#87dddd}.c-values-protection{background:#51c0e7}
+  .c-pensiongap{background-color:#dce5fa}.c-investment{background-color:#4e7cf7}.c-property-creation{background-color:#6b82ce}.c-health{background-color:#96d2e9}.c-real-estate{background-color:#22a9da}.c-children{background-color:#aac4d7}.c-tax-advantage{background-color:#87dddd}.c-values-protection{background-color:#51c0e7}
 </style>
 </head>
 <body>
@@ -527,6 +530,16 @@
 
   /* =============== Step 3: Auswertung =============== */
   var CALC_LINK = { "health":"franchise.html", "pensiongap":"vorsorgerechner.html", "real-estate":"immobilienrechner.html" };
+  var THEME_IMAGES={
+    "pensiongap":"https://images.unsplash.com/photo-1474978528675-4a50a4508dc3?auto=format&fit=crop&w=1400&q=82",
+    "investment":"https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1400&q=82",
+    "property-creation":"https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1400&q=82",
+    "health":"https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1400&q=82",
+    "real-estate":"https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1400&q=82",
+    "children":"https://images.unsplash.com/photo-1602030028438-4cf153cbae9e?auto=format&fit=crop&w=1400&q=82",
+    "tax-advantage":"https://images.unsplash.com/photo-1554224154-26032ffc0d07?auto=format&fit=crop&w=1400&q=82",
+    "values-protection":"https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1400&q=82"
+  };
   function renderThemes(){
     var s=scores();
     var ranked=AREAS.map(function(a){return {a:a, v:s[a.key]};}).sort(function(x,y){return y.v-x.v;});
@@ -542,6 +555,7 @@
       t.innerHTML='<div class="cover c-'+a.key+'"><span class="rank">Priorität '+(i+1)+'</span></div>'+
         '<div class="info"><span class="miniring" style="--p:'+p+';--c:'+col+'"></span>'+
         '<div><h3>'+a.name+'</h3><span class="start">Beratung starten →</span></div></div>';
+      t.querySelector(".cover").style.backgroundImage='url("'+THEME_IMAGES[a.key]+'")';
       host.appendChild(t);
     });
   }
