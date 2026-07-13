@@ -119,6 +119,10 @@
   .priminfo-panel{margin-top:16px;border:1px solid #dce6ff;background:var(--royal-050);border-radius:14px;padding:14px}
   .priminfo-panel strong{display:block;font-size:13px}.priminfo-panel p{font-size:12px;color:var(--ink-2);margin:5px 0 10px}
   .primary-link{display:inline-flex;background:var(--royal);color:#fff;border-radius:9px;padding:9px 12px;font-size:12px;font-weight:800}
+  .assumption{margin:0 0 16px;padding:12px 14px;border-radius:12px;background:#fff8e8;border:1px solid #f2dfaa;color:#6b5520;font-size:12.5px}
+  .quick{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.quick button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 6px;font:inherit;font-size:12px;font-weight:800;cursor:pointer}.quick button:hover{border-color:var(--royal);color:var(--royal)}
+  .riskline{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px;border-radius:12px;background:rgba(255,255,255,.12);position:relative;z-index:1}.dot{width:11px;height:11px;border-radius:50%;background:#f7c948;flex:0 0 auto}.dot.ok{background:#4bd08b}.dot.bad{background:#ff8b7f}.riskline span{font-size:13px;color:#fff}.riskline b{display:block}
+  details.analysis{margin-top:22px}details.analysis>summary{cursor:pointer;list-style:none;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 18px;font-weight:800;color:var(--royal)}details.analysis[open]>summary{margin-bottom:16px}
 </style>
 </head>
 <body>
@@ -207,6 +211,20 @@
         <div class="rangeval"><span>CHF 0</span><b class="num" id="costVal">CHF 1'200</b><span>CHF 8'000</span></div>
       </div>
 
+      <div class="ctl">
+        <label>Schnelle Einschätzung</label>
+        <div class="quick" aria-label="Gesundheitskosten schnell wählen">
+          <button type="button" data-cost="500">Wenig</button><button type="button" data-cost="2000">Mittel</button><button type="button" data-cost="6000">Hoch</button>
+        </div>
+        <p class="fieldnote">Gemeint sind voraussichtlich kassenpflichtige Arzt-, Therapie- und Medikamentenkosten – ohne Prämien.</p>
+      </div>
+
+      <div class="ctl">
+        <label for="reserve">Sofort verfügbare Gesundheitsreserve</label>
+        <input id="reserve" type="number" min="0" step="100" value="3000" inputmode="numeric">
+        <p class="fieldnote">Damit prüfen wir, ob eine höhere Franchise nicht nur günstiger, sondern auch finanziell tragbar ist.</p>
+      </div>
+
       <div class="priminfo-panel">
         <strong>Exakte Prämien bei Priminfo</strong>
         <p>Alle verfügbaren Kassen, Modelle und die zur PLZ gehörende Prämienregion vergleichen.</p>
@@ -215,6 +233,7 @@
     </section>
 
     <section>
+      <p class="assumption"><b>Orientierungsrechnung:</b> Die lokale Berechnung nutzt BAG-Kantonsdurchschnitte für das Standardmodell. PLZ, Krankenkasse und Modell werden erst im offiziellen Priminfo-Vergleich exakt berücksichtigt.</p>
       <div class="card hero result" aria-live="polite">
         <div class="kicker">Ihre Empfehlung</div>
         <div class="bighead">
@@ -222,6 +241,7 @@
           <span class="pill good" id="bigPill">pro Jahr</span>
         </div>
         <div class="subresult" id="subRes">&mdash;</div>
+        <div class="riskline"><i class="dot" id="riskDot"></i><span><b id="riskTitle">Reserve wird geprüft</b><span id="riskText">Tragbarkeit der empfohlenen Franchise</span></span></div>
       </div>
 
       <div class="tiles">
@@ -230,6 +250,8 @@
         <div class="tile"><div class="t-l">Break-even</div><div class="t-v num" id="tBreak">&mdash;</div><div class="t-s">ab hier lohnt tiefe Franchise</div></div>
       </div>
 
+      <details class="analysis">
+        <summary>Detailanalyse und Diagramme anzeigen</summary>
       <div class="charts">
         <div class="card">
           <div class="chart-title"><div>
@@ -260,6 +282,7 @@
           </div>
         </div>
       </div>
+      </details>
     </section>
   </div>
 </main>
@@ -276,7 +299,7 @@
   var MAXC = 8000;
   var SER = ["--s1","--s2","--s3"];
 
-  var state = {kt:"ZH", age:"ERW", unf:"MIT-UNF", fr:300, c:1200, plz:"", yob:"", insurer:"", model:"base"};
+  var state = {kt:"ZH", age:"ERW", unf:"MIT-UNF", fr:300, c:1200, reserve:3000, plz:"", yob:"", insurer:"", model:"base"};
 
   function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
   function fmt(n){return "CHF " + Math.round(n).toLocaleString("de-CH");}
@@ -345,6 +368,11 @@
 
   var cost=document.getElementById("cost");
   cost.addEventListener("input", function(){ state.c=+this.value; document.getElementById("costVal").textContent=fmt(state.c); render(); });
+  document.querySelector(".quick").addEventListener("click",function(e){
+    var b=e.target.closest("button[data-cost]"); if(!b)return;
+    state.c=+b.dataset.cost; cost.value=state.c; render();
+  });
+  document.getElementById("reserve").addEventListener("input",function(){state.reserve=Math.max(0,+this.value||0);render();});
 
   document.getElementById("tableToggle").addEventListener("click", function(){
     var w=document.getElementById("tableWrap"); var bar=document.getElementById("barChart");
@@ -497,6 +525,14 @@
     document.getElementById("tBest").textContent=fmt(bt);
     document.getElementById("tBestS").textContent="Franchise "+fmt0(best);
 
+    var needed=best+CAP[state.age], enough=state.reserve>=needed;
+    var dot=document.getElementById("riskDot"), title=document.getElementById("riskTitle"), risk=document.getElementById("riskText");
+    dot.className="dot "+(enough?"ok":"bad");
+    title.textContent=enough?"Reserve ausreichend":"Reserve zu knapp";
+    risk.textContent=enough
+      ? " Ihre Reserve deckt den maximalen Eigenanteil von "+fmt(needed)+"."
+      : " Für Franchise "+fmt0(best)+" empfehlen wir mindestens "+fmt(needed)+" verfügbare Reserve; es fehlen "+fmt(needed-state.reserve)+".";
+
     // break-even: cost level where the lowest franchise becomes cheapest vs highest
     var loF=frs[0], hiF=frs[frs.length-1];
     var be=breakEven(loF,hiF);
@@ -535,9 +571,11 @@
     state.unf=q.get("accident")==="none"?"OHN-UNF":"MIT-UNF";
     state.fr=Number(q.get("franchise"))||300;
     state.model=q.get("model")||"base";
+    state.reserve=Number(q.get("reserve"))||3000;
     document.getElementById("plz").value=state.plz;
     document.getElementById("yob").value=state.yob;
     document.getElementById("model").value=state.model;
+    document.getElementById("reserve").value=state.reserve;
     if(state.yob) state.age=ageFromBirthYear(state.yob);
     clampFr();
     document.querySelectorAll("#ageSeg button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.age===state.age);});
