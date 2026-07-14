@@ -35,6 +35,7 @@
     "combinvest.customerProfile.v1",
     "combinvest.budget.v1",
     "cominvest-analysis",
+    "combinvest.investorProfile.v1",
     "kf_budget"
   ];
 
@@ -203,6 +204,20 @@
       /* Krypto-Fehler -> sicherer Zustand: nichts entschlüsselbar, neu beginnen */
       cache = {};
       if (global.console && console.warn) console.warn("[combinvest-secure] init fallback:", err && err.message);
+    });
+  }
+
+  function flushNow() {
+    if (degraded || !cryptoKey) return;
+    if (writeTimer) { clearTimeout(writeTimer); writeTimer = null; }
+    encryptCache().then(function (blob) {
+      try { global.localStorage.setItem(BLOB_KEY, blob); } catch (e) {}
+    }).catch(function () {});
+  }
+  if (global.addEventListener) {
+    global.addEventListener("pagehide", flushNow);
+    global.addEventListener("visibilitychange", function () {
+      if (global.document && global.document.visibilityState === "hidden") flushNow();
     });
   }
 

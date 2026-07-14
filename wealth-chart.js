@@ -1,0 +1,24 @@
+(function(){
+  "use strict";
+  function getStore(){
+    if(window.Combinvest&&window.Combinvest.store) return window.Combinvest.store;
+    return {get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+            set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}}};
+  }
+  var chart=document.getElementById("chart"),form=document.getElementById("form");if(!chart||!form)return;
+  var mode=new URLSearchParams(location.search).get("tool")||"sparen";
+  var customerId=(new URLSearchParams(location.search).get("customerId")||"local-demo").replace(/[^a-zA-Z0-9_-]/g,"_");
+  var key="combinvest.crm.customer."+customerId+".wealth-"+mode+".v1";
+  document.querySelectorAll('a[href]').forEach(function(a){try{var u=new URL(a.getAttribute("href"),location.href);if(u.origin===location.origin){u.searchParams.set("customerId",customerId);a.href=u.pathname.split("/").pop()+u.search+u.hash;}}catch(e){}});
+  var tabs=document.getElementById("tabs");if(tabs)tabs.addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;e.preventDefault();e.stopImmediatePropagation();var names=["sparen","zins","start","inflation","kosten","ziel","3a","steuer"],buttons=Array.from(tabs.querySelectorAll("button")),next=names[buttons.indexOf(b)]||"sparen";location.href="vermoegensrechner.html?tool="+encodeURIComponent(next)+"&customerId="+encodeURIComponent(customerId);},true);
+  var style=document.createElement("style");style.textContent='.chart-tip{position:absolute;display:none;pointer-events:none;z-index:5;min-width:205px;padding:11px 13px;border-radius:11px;background:#0f1b36;color:#fff;box-shadow:0 8px 24px rgba(15,27,54,.22);font-size:12px}.chart-tip b{display:block;font-size:14px;margin-bottom:5px}.chart-tip span{display:flex;justify-content:space-between;gap:18px;margin-top:3px}.chart-tip i{font-style:normal;color:#cdd6eb}';document.head.appendChild(style);
+  var parent=chart.parentElement;parent.style.position="relative";var tip=document.createElement("div");tip.className="chart-tip";tip.setAttribute("role","status");parent.appendChild(tip);
+  function num(id,fallback){var e=document.getElementById(id);return e?+e.value:fallback||0;}function money(n){return "CHF "+Math.round(n).toLocaleString("de-CH");}
+  function fv(cap,monthly,years,rate){var m=rate/1200,n=years*12;return m?cap*Math.pow(1+m,n)+monthly*(Math.pow(1+m,n)-1)/m:cap+monthly*n;}
+  function values(year){var cap=num("capital"),monthly=num("monthly"),rate=num("rate"),paid=cap+monthly*12*year,total=fv(cap,monthly,year,rate),rows=[["Vermögen",total],["Einbezahlt",paid],["Zinsertrag",total-paid]];if(mode==="zins")rows.push(["Bei "+num("rate2")+" %",fv(cap,monthly,year,num("rate2"))]);if(mode==="start")rows.push(["Start nach "+num("delay")+" J.",fv(cap,monthly,Math.max(0,year-num("delay")),rate)]);if(mode==="kosten")rows.push(["Nach TER",fv(cap,monthly,year,Math.max(0,rate-num("ter")))]);if(mode==="inflation"){var real=cap/Math.pow(1+num("inflation")/100,year);rows=[["Reale Kaufkraft",real],["Kaufkraftverlust",cap-real]];}return rows;}
+  function save(){var inputs={};form.querySelectorAll("input").forEach(function(x){inputs[x.id]=+x.value;});try{getStore().set(key,JSON.stringify({customerId:customerId,module:"wealth-"+mode,updatedAt:new Date().toISOString(),data:{inputs:inputs}}));}catch(e){}}
+  ((window.Combinvest&&window.Combinvest.ready)||Promise.resolve()).then(function(){try{var record=JSON.parse(getStore().get(key)||"null");if(record&&record.data&&record.data.inputs)Object.keys(record.data.inputs).forEach(function(id){var e=document.getElementById(id);if(e){e.value=record.data.inputs[id];e.dispatchEvent(new Event("input",{bubbles:true}));}});}catch(e){}});
+  form.addEventListener("input",save);
+  chart.addEventListener("mousemove",function(ev){var box=chart.getBoundingClientRect(),ratio=Math.max(0,Math.min(1,(ev.clientX-box.left)/box.width)),years=Math.max(1,num("years",1)),year=Math.round(ratio*years),rows=values(year);tip.innerHTML="<b>Jahr "+year+"</b>"+rows.map(function(r){return "<span><i>"+r[0]+"</i><strong>"+money(r[1])+"</strong></span>";}).join("");tip.style.display="block";tip.style.left=Math.max(8,Math.min(parent.clientWidth-tip.offsetWidth-8,ratio*chart.clientWidth))+'px';tip.style.top=(chart.offsetTop+28)+'px';});
+  chart.addEventListener("mouseleave",function(){tip.style.display="none";});
+})();
