@@ -573,7 +573,9 @@
       var rawP=(window.CombinvestCRM?Store.get(CombinvestCRM.storageKey("analysis")):null)||Store.get("combinvest.customerProfile.v1");
       stored=JSON.parse(rawP||"{}");
     }catch(e){}
-    var base=stored.basisdaten||{}, answers=stored.answers||{};
+    var base=stored.basisdaten||{}, answersAll=stored.answers||{}, answeredMap=stored.answered||{};
+    /* Wizard-Defaults nicht als Nutzerdaten behandeln */
+    var answers={}; Object.keys(answersAll).forEach(function(k){ if(answeredMap[k]) answers[k]=answersAll[k]; });
     var resumed=window.CombinvestCRM?CombinvestCRM.data("franchise",null):null;
     if(resumed) Object.keys(resumed).forEach(function(k){if(resumed[k]!=null)state[k]=resumed[k];});
     state.plz=q.get("plz")||base.wohnort_plz||answers.plz||state.plz||"";

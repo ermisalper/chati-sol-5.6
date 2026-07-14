@@ -167,8 +167,11 @@
     var lohn=4500;
     /* Vorbefuellung aus dem Finanzstatus Check (Jahresbrutto / 12), falls vorhanden */
     try{
-      var prof=JSON.parse(Store.get(PROFILE_KEY)||"null");
-      var brutto=prof && prof.answers ? Number(prof.answers.brutto) : 0;
+      var rawP=(window.CombinvestCRM?Store.get(CombinvestCRM.storageKey("analysis")):null)||Store.get(PROFILE_KEY);
+      var prof=JSON.parse(rawP||"null");
+      /* nur uebernehmen, wenn die Frage tatsaechlich beantwortet wurde (kein Wizard-Default) */
+      var answeredBrutto=prof&&prof.answered&&prof.answered.brutto;
+      var brutto=answeredBrutto&&prof.answers ? Number(prof.answers.brutto) : 0;
       if(isFinite(brutto) && brutto>0) lohn=Math.round(brutto/12/50)*50;
     }catch(e){}
     return {income:[{name:"Lohn (netto)",amount:lohn},{name:"Nebeneinkommen",amount:0}],
