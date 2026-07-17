@@ -39,7 +39,9 @@
   .step.active small{color:#c7d0ff} .step.active b{color:#fff}
   .steps{display:flex;gap:8px;flex-wrap:wrap}
   .nav .spacer{flex:1}
-  .brand{display:flex;align-items:baseline;gap:1px;font-weight:900;font-size:22px;letter-spacing:-.02em}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:900;font-size:22px;line-height:.72;letter-spacing:-.055em}
+  .brand-mark{display:grid;width:34px;height:38px;place-items:center;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:var(--royal);color:#fff;font-size:17px;line-height:1;letter-spacing:0}
+  .brand-word{display:flex;flex-direction:column;gap:1px}
   .brand .b1{color:var(--ink)} .brand .b2{color:var(--royal)}
 
   main{padding:26px 0 70px}
@@ -117,7 +119,7 @@
       <span class="step active"><small>Schnellanalyse</small><b>Budgetrechner</b></span>
     </nav>
     <span class="spacer"></span>
-    <span class="brand"><span class="b1">comb</span><span class="b2">invest</span></span>
+    <span class="brand" aria-label="combinvest"><span class="brand-mark" aria-hidden="true">C</span><span class="brand-word"><span class="b1">comb</span><span class="b2">invest</span></span></span>
   </div>
 </header>
 

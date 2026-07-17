@@ -2,11 +2,13 @@
 <html lang="de">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
   <title>Dokumenterstellung | comb invest</title>
   <style>
     :root{--blue:#397af2;--dark:#111d33;--muted:#68758a;--line:#dce4ef;--soft:#f5f7fb;--green:#139b68}
     *{box-sizing:border-box}body{margin:0;background:var(--soft);color:var(--dark);font:15px/1.45 Inter,Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}
-    header{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5vw;position:sticky;top:0;z-index:5}.brand{font-size:22px;font-weight:900;line-height:.8}.brand span{color:var(--blue)}.back{color:var(--blue);text-decoration:none;font-weight:800}
+    header{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 5vw;position:sticky;top:0;z-index:5}.brand{display:flex;align-items:center;gap:9px;font-size:22px;font-weight:900;line-height:.72;letter-spacing:-.04em}.brand-mark{display:grid;width:34px;height:38px;place-items:center;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:var(--blue);color:#fff;font-size:17px;line-height:1;letter-spacing:0}.brand-word{display:flex;flex-direction:column;gap:1px}.brand-word .b2{color:var(--blue)}.back{color:var(--blue);text-decoration:none;font-weight:800}
     main{max-width:1120px;margin:34px auto 70px;padding:0 20px}.top{text-align:center;margin-bottom:26px}.top h1{font-size:clamp(28px,4vw,42px);margin:5px}.top p{color:var(--muted);margin:0}.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:26px auto;max-width:980px}.step{padding:9px;text-align:center;border-radius:99px;background:#e8edf4;color:#738096;font-size:12px;font-weight:800}.step.active{background:var(--blue);color:#fff}.step.done{background:#dff5ec;color:#087451}
     .panel{display:none}.panel.active{display:block}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:clamp(20px,4vw,34px);box-shadow:0 10px 35px #18345b0c}.card h2{margin:0 0 5px;font-size:23px}.hint{color:var(--muted);margin:0 0 22px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}label{font-size:13px;font-weight:800}input,select,textarea{width:100%;margin-top:6px;border:1px solid #c9d5e4;border-radius:9px;padding:11px;background:#fff;color:var(--dark)}textarea{min-height:100px;resize:vertical}.full{grid-column:1/-1}.choice-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.choice{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;gap:9px;align-items:center}.choice input{width:auto;margin:0;accent-color:var(--blue)}
     .docs{display:grid;gap:11px}.doc{display:grid;grid-template-columns:auto 1fr auto;gap:13px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:15px}.doc:has(input:checked){border-color:var(--blue);background:#f5f9ff}.doc input{width:19px;height:19px;margin:0;accent-color:var(--blue)}.doc strong,.doc small{display:block}.doc small{color:var(--muted)}.tag{font-size:11px;font-weight:800;color:#2864ca;background:#e8f1ff;border-radius:99px;padding:4px 8px}.open{font-size:12px;color:var(--blue);text-decoration:none;font-weight:800}
@@ -16,7 +18,7 @@
   </style>
 </head>
 <body>
-<header><a class="back" href="analyse.html?step=3">← Risikoanalyse</a><div class="brand">comb<br><span>invest</span></div></header>
+<header><a class="back" href="analyse.html?step=3">← Risikoanalyse</a><div class="brand" aria-label="combinvest"><span class="brand-mark" aria-hidden="true">C</span><span class="brand-word"><span class="b1">comb</span><span class="b2">invest</span></span></div></header>
 <main>
   <div class="top"><div style="color:var(--blue);font-size:12px;font-weight:900;letter-spacing:.12em">BERATUNGSABSCHLUSS</div><h1>Dokumenterstellung</h1><p>Einmal erfassen, automatisch übernehmen und gemeinsam unterschreiben.</p></div>
   <div class="steps"><div class="step active">1 · Berater</div><div class="step">2 · Kunde</div><div class="step">3 · Kontakt</div><div class="step">4 · Dokumente</div><div class="step">5 · Beratung</div><div class="step">6 · Signaturen</div></div>
@@ -50,7 +52,7 @@
     {id:"pension",name:"Vollmacht Vorsorgeinformationen",tag:"Vorsorge",file:"documents/templates/vollmacht-vorsorgeinformationen.pdf"},
     {id:"pk",name:"PK-Gelder einholen",tag:"Vorsorge",file:"documents/templates/pk-gelder-einholen.pdf"}
   ], panel=0, panels=[].slice.call(document.querySelectorAll(".panel")), steps=[].slice.call(document.querySelectorAll(".step")), crm=window.CombinvestCRM;
-  document.getElementById("documents").innerHTML=definitions.map(function(d){return '<label class="doc"><input type="checkbox" data-doc="'+d.id+'" '+(d.checked?'checked':'')+'><span><strong>'+d.name+'</strong><small>Daten werden automatisch in die PDF-Vorlage übernommen.</small></span><span><em class="tag">'+d.tag+'</em><br><a class="open" target="_blank" href="'+d.file+'">Vorlage ansehen ↗</a></span></label>';}).join("");
+  document.getElementById("documents").innerHTML=definitions.map(function(d){return '<label class="doc"><input type="checkbox" data-doc="'+d.id+'" '+(d.checked?'checked':'')+'><span><strong>'+d.name+'</strong><small>Daten werden automatisch in die PDF-Vorlage übernommen.</small></span><span><em class="tag">'+d.tag+'</em><br><a class="open" target="_blank" rel="noopener" href="'+d.file+'">Vorlage ansehen ↗</a></span></label>';}).join("");
   var ids=["advisorName","advisorEmail","finma","date","salutation","birthdate","firstName","lastName","company","email","phone","street","zip","city","meetingType","place","topics","decision"];
   var saved=crm.data("document-closing",{}), previous=crm.data("profile",{}); document.getElementById("date").value=saved.date||new Date().toISOString().slice(0,10);
   ids.forEach(function(id){var el=document.getElementById(id);if(saved[id]!=null)el.value=saved[id];});

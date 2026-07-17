@@ -1,0 +1,24 @@
+name: CI — Engines & Invarianten
+
+on:
+  push:
+    branches: ["main", "feature/**"]
+  pull_request:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Engine-Tests (Genauigkeit Vorsorge & Tragbarkeit)
+        run: |
+          node --test engine/pension-engine.test.mjs
+          node --test engine/affordability-engine.test.mjs
+
+      - name: Sicherheits- & Qualitäts-Invarianten
+        run: node tools/check-invariants.mjs

@@ -43,8 +43,8 @@
   .nav .spacer{flex:1}
   .lang{font-weight:800;font-size:12px;letter-spacing:.12em;color:var(--ink-2)}
   .brand{display:flex;align-items:center;gap:8px;font-weight:900;font-size:25px;line-height:.72;letter-spacing:-.055em}
-  .brand-mark{display:grid;width:34px;height:38px;place-items:center;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:var(--royal);color:#fff;font-size:17px;line-height:1;letter-spacing:0}.brand-word{display:flex;flex-direction:column;gap:1px}
-  .brand .b1{color:#05080f;display:block}.brand .b2{color:#23488d;display:block}
+  .brand-mark{display:grid;width:34px;height:38px;place-items:center;clip-path:polygon(50% 0,94% 25%,94% 75%,50% 100%,6% 75%,6% 25%);background:#3A57F5;color:#fff;font-size:17px;line-height:1;letter-spacing:0}.brand-word{display:flex;flex-direction:column;gap:1px}
+  .brand .b1{color:#0F172A;display:block}.brand .b2{color:#3A57F5;display:block}
 
   main{padding:24px 0 70px}
   .panel{animation:fade .25s ease}
@@ -254,6 +254,7 @@
         <button class="btn-link" id="finishBtn">▢ Profiling abschliessen</button>
         <button class="btn-link" id="pdfBtn">▽ Beratungsprotokoll erstellen</button>
         <a class="btn-link" href="dokumente.html" style="text-decoration:none">✎ Dokumente &amp; Unterschrift</a>
+        <button class="btn-link" id="wipeBtn" style="color:#8A97AC" title="Alle lokal gespeicherten Kundendaten unwiderruflich löschen">🗑 Alle Daten löschen</button>
       </span>
     </div>
   </section>
@@ -620,6 +621,14 @@
     var self=this;setTimeout(function(){self.disabled=false;self.textContent="▢ Profiling erneut speichern";},1800);
   });
   document.getElementById("pdfBtn").addEventListener("click",exportPdf);
+  document.getElementById("wipeBtn").addEventListener("click",function(){
+    if(!confirm("Alle lokal gespeicherten Kundendaten (Profil, Verträge, Budget, Dokumente) unwiderruflich löschen?")) return;
+    try{ if(window.Combinvest&&Combinvest.store) Combinvest.store.clearAll(); }catch(e){}
+    try{ Object.keys(localStorage).forEach(function(k){ if(k.indexOf("combinvest")===0||k==="kf_budget"||k==="cominvest-analysis") localStorage.removeItem(k); }); }catch(e){}
+    try{ sessionStorage.clear(); }catch(e){}
+    alert("Alle lokalen Daten wurden gelöscht.");
+    window.location.href="index.html";
+  });
 
   /* init */
   var requestedStep=+(new URLSearchParams(window.location.search).get("step"));
