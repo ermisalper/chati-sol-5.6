@@ -185,6 +185,106 @@ export async function saveReferral(input: {
   }
 }
 
+export type SaveDocumentsResult = { ok: true } | { ok: false; error: string }
+
+/**
+ * Stores the generated document package summary into the analysis snapshot
+ * under `documents`, so the closing step can reflect that documents exist.
+ */
+export async function saveDocuments(input: {
+  analysisId: string
+  documents: Record<string, unknown>
+}): Promise<SaveDocumentsResult> {
+  try {
+    const advisor = await getCurrentAdvisor()
+    if (!advisor) return { ok: false, error: "Nicht angemeldet." }
+
+    const supabase = await createClient()
+    const { data: row, error: readErr } = await supabase
+      .from("analyses")
+      .select("lock_version,current_step,current_question,progress_percent,latest_snapshot")
+      .eq("id", input.analysisId)
+      .maybeSingle()
+    if (readErr || !row) return { ok: false, error: readErr?.message ?? "Analyse nicht gefunden." }
+
+    const current = (row.latest_snapshot as Record<string, unknown> | null) ?? {}
+    const snapshot = {
+      ...current,
+      documents: { ...input.documents, savedAt: new Date().toISOString() },
+    }
+
+    const { error } = await supabase.rpc("save_analysis_snapshot", {
+      p_analysis_id: input.analysisId,
+      p_expected_lock_version: Number(row.lock_version),
+      p_step: Number(row.current_step ?? 3),
+      p_question: Number(row.current_question ?? 0),
+      p_progress: Number(row.progress_percent ?? 0),
+      p_snapshot: snapshot,
+      p_complete: false,
+    })
+    if (error) return { ok: false, error: error.message }
+
+    revalidatePath(`/analyse/${input.analysisId}/abschluss`)
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Speichern fehlgeschlagen." }
+  }
+}
+
+export type SaveClosingResult = { ok: true; completed: boolean } | { ok: false; error: string }
+
+/**
+ * Persists the advisory closing step (next appointment + final confirmations)
+ * into the analysis snapshot under `closing`. When `complete` is true the
+ * analysis is marked completed via the RPC.
+ */
+export async function saveClosing(input: {
+  analysisId: string
+  closing: Record<string, unknown>
+  complete?: boolean
+}): Promise<SaveClosingResult> {
+  try {
+    const advisor = await getCurrentAdvisor()
+    if (!advisor) return { ok: false, error: "Nicht angemeldet." }
+
+    const supabase = await createClient()
+    const { data: row, error: readErr } = await supabase
+      .from("analyses")
+      .select("lock_version,current_step,current_question,progress_percent,latest_snapshot")
+      .eq("id", input.analysisId)
+      .maybeSingle()
+    if (readErr || !row) return { ok: false, error: readErr?.message ?? "Analyse nicht gefunden." }
+
+    const current = (row.latest_snapshot as Record<string, unknown> | null) ?? {}
+    const snapshot = {
+      ...current,
+      closing: {
+        ...(current.closing as Record<string, unknown> | undefined),
+        ...input.closing,
+        completedAt: input.complete ? new Date().toISOString() : ((current.closing as Record<string, unknown>)?.completedAt ?? null),
+        updatedAt: new Date().toISOString(),
+      },
+    }
+
+    const { error } = await supabase.rpc("save_analysis_snapshot", {
+      p_analysis_id: input.analysisId,
+      p_expected_lock_version: Number(row.lock_version),
+      p_step: Number(row.current_step ?? 3),
+      p_question: Number(row.current_question ?? 0),
+      p_progress: input.complete ? 100 : Number(row.progress_percent ?? 0),
+      p_snapshot: snapshot,
+      p_complete: input.complete ?? false,
+    })
+    if (error) return { ok: false, error: error.message }
+
+    revalidatePath(`/analyse/${input.analysisId}/abschluss`)
+    revalidatePath(`/analyse/${input.analysisId}`)
+    return { ok: true, completed: input.complete ?? false }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Speichern fehlgeschlagen." }
+  }
+}
+
 /**
  * Persists a wizard snapshot via the optimistic-locking RPC. The client passes
  * the lock_version it last saw; a mismatch raises 40001, which the caller

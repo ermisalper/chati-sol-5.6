@@ -350,15 +350,13 @@ export function AnalysisWizard({
                 <Gift className="h-4 w-4" />
                 Weiterempfehlen
               </Link>
-              <button
-                type="button"
-                onClick={complete}
-                disabled={completing || isCompleted}
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary-deep disabled:opacity-60"
+              <Link
+                href={`/analyse/${analysisId}/abschluss`}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary-deep"
               >
-                {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                {isCompleted ? "Abgeschlossen" : "Analyse abschließen"}
-              </button>
+                {isCompleted ? <Check className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                {isCompleted ? "Abgeschlossen" : "Zum Beratungsabschluss"}
+              </Link>
             </div>
           </div>
         </div>
