@@ -163,7 +163,7 @@ export function DocumentBuilder({
   function validate(n: number): boolean {
     setError(null)
     const req: Record<number, (keyof typeof f)[]> = {
-      0: ["advisorName", "advisorEmail", "finma", "advisorStreet", "advisorZipCity", "date"],
+      0: ["advisorName", "advisorEmail", "advisorStreet", "advisorZipCity", "date"],
       1: ["firstName", "lastName"],
       2: ["email", "street", "zip", "city"],
       4: ["place"],
@@ -479,7 +479,7 @@ export function DocumentBuilder({
             <div className="grid gap-4 sm:grid-cols-2">
               <Field className="sm:col-span-2" label="Kundenberater*"><input className={INPUT} value={f.advisorName} onChange={(e) => set("advisorName", e.target.value)} /></Field>
               <Field label="E-Mail Kundenberater*"><input className={INPUT} type="email" value={f.advisorEmail} onChange={(e) => set("advisorEmail", e.target.value)} /></Field>
-              <Field label="FINMA-Registernummer*"><input className={INPUT} value={f.finma} onChange={(e) => set("finma", e.target.value)} placeholder="Falls hinterlegt" /></Field>
+              <Field label="FINMA-Registernummer"><input className={INPUT} value={f.finma} onChange={(e) => set("finma", e.target.value)} placeholder="Falls hinterlegt" /></Field>
               <Field label="Datum der Kundenberatung*"><input className={INPUT} type="date" value={f.date} onChange={(e) => set("date", e.target.value)} /></Field>
               <Field label="Berateradresse*"><input className={INPUT} value={f.advisorStreet} onChange={(e) => set("advisorStreet", e.target.value)} /></Field>
               <Field label="PLZ / Ort Berater*"><input className={INPUT} value={f.advisorZipCity} onChange={(e) => set("advisorZipCity", e.target.value)} /></Field>
@@ -622,7 +622,7 @@ export function DocumentBuilder({
                     <select className={INPUT} value={protocol.cancellation} onChange={(e) => setProtocol((p) => ({ ...p, cancellation: e.target.value }))}>
                       <option value="forward">Kunde erlaubt die Weiterleitung unterzeichneter Kündigungen</option>
                       <option value="self">Kunde kündigt selbst</option>
-                      <option value="none">Keine Kündigungen erforderlich</option>
+                      <option value="none">Keine K��ndigungen erforderlich</option>
                     </select>
                   </div>
                 </div>
