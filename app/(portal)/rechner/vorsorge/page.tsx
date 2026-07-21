@@ -8,12 +8,13 @@ export const metadata = {
 export default async function VorsorgePage({
   searchParams,
 }: {
-  searchParams: Promise<{ salary?: string; age?: string; children?: string }>
+  searchParams: Promise<{ salary?: string; age?: string; children?: string; aid?: string; cid?: string }>
 }) {
   const sp = await searchParams
   const salary = Number(sp.salary) || undefined
   const age = Number(sp.age) || undefined
   const children = Number(sp.children) || undefined
+  const ctx = { analysisId: sp.aid, customerId: sp.cid }
   return (
     <CalcShell
       eyebrow="Vorsorge & Rentenlücke"
@@ -23,7 +24,7 @@ export default async function VorsorgePage({
       backLabel="Rechner"
       chip="AHV-Skala 44"
     >
-      <PensionGapCalc defaults={{ salary, age, children }} />
+      <PensionGapCalc defaults={{ salary, age, children }} ctx={ctx} />
     </CalcShell>
   )
 }

@@ -16,7 +16,8 @@ import {
   type ValueKey,
 } from "@/lib/engine/pension-gap"
 import { formatCHF } from "@/lib/format"
-import { Lock } from "lucide-react"
+import { Lock, Upload, ChevronDown } from "lucide-react"
+import { CalcActionBar, type CalcContext } from "@/components/portal/rechner/calc-action-bar"
 
 const RISKS: Risk[] = ["iv", "retirement", "death"]
 
@@ -30,9 +31,10 @@ interface Props {
     age?: number
     children?: number
   }
+  ctx?: CalcContext
 }
 
-export function PensionGapCalc({ defaults }: Props) {
+export function PensionGapCalc({ defaults, ctx }: Props) {
   const [risk, setRisk] = useState<Risk>("iv")
   const [salary, setSalary] = useState(defaults?.salary ?? 90000)
   const [targetPct, setTargetPct] = useState(90)
@@ -46,6 +48,9 @@ export function PensionGapCalc({ defaults }: Props) {
   const [contributionGaps, setContributionGaps] = useState(0)
   const [bvgMode, setBvgMode] = useState<BvgMode>("minimum")
   const [manual, setManual] = useState<ValuesByRisk>(emptyValues())
+  const [period, setPeriod] = useState<"year" | "month">("year")
+  const [expert, setExpert] = useState(false)
+  const [pkFileName, setPkFileName] = useState("")
 
   const inputs = {
     risk,
@@ -76,7 +81,45 @@ export function PensionGapCalc({ defaults }: Props) {
   const barSegments = gap.items.filter((i) => i.value > 0)
   const scaleMax = Math.max(gap.target, gap.total) || 1
 
+  // Year/Month display switch (values are stored as annual amounts).
+  const per = (v: number) => (period === "month" ? v / 12 : v)
+  const perSuffix = period === "month" ? "/ Monat" : "/ Jahr"
+
   return (
+    <>
+    <CalcActionBar
+      ctx={ctx ?? {}}
+      calcKey="pension-gap"
+      buildPayload={() => ({
+        calculator: "pension-gap",
+        inputs: { risk, salary, targetPct, age, cause, degree, children, ahvMode, bvgMode },
+        results: [
+          `Risiko ${RISK_LABELS[risk]}`,
+          `Deckung ${coverPct} %`,
+          hasGap ? `Deckungslücke ${formatCHF(gap.gap)}/Jahr` : "Keine Deckungslücke",
+          `Ziel ${formatCHF(gap.target)}`,
+          `Vorhandene Leistungen ${formatCHF(gap.total)}`,
+        ],
+      })}
+      onReset={() => {
+        setRisk("iv")
+        setSalary(defaults?.salary ?? 90000)
+        setTargetPct(90)
+        setAge(defaults?.age ?? 40)
+        setStartAge(25)
+        setCause("illness")
+        setDegree(100)
+        setChildren(defaults?.children ?? 0)
+        setAhvMode("scale44")
+        setAverageIncome(0)
+        setContributionGaps(0)
+        setBvgMode("minimum")
+        setManual(emptyValues())
+        setPeriod("year")
+        setExpert(false)
+        setPkFileName("")
+      }}
+    />
     <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
       {/* Inputs */}
       <div className="flex flex-col gap-6">
@@ -103,7 +146,7 @@ export function PensionGapCalc({ defaults }: Props) {
 
         {/* Base inputs */}
         <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Grunddaten</p>
+          <SectionHeading n={1} title="Einkommen & Grunddaten" />
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <MoneyInput label="Jahreslohn (brutto)" value={salary} onChange={setSalary} />
             <div>
@@ -126,9 +169,7 @@ export function PensionGapCalc({ defaults }: Props) {
         {/* Risk-specific inputs */}
         {risk === "iv" && (
           <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Invaliditäts-Parameter
-            </p>
+            <SectionHeading n={2} title="Invaliditäts-Parameter" />
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <span className="text-sm font-medium text-foreground">Ursache</span>
@@ -168,7 +209,7 @@ export function PensionGapCalc({ defaults }: Props) {
 
         {risk === "death" && (
           <div className="rounded-2xl border border-border bg-card p-5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Todesfall-Parameter</p>
+            <SectionHeading n={2} title="Todesfall-Parameter" />
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <NumberInput label="Kinder" value={children} onChange={setChildren} min={0} max={10} />
             </div>
@@ -177,9 +218,37 @@ export function PensionGapCalc({ defaults }: Props) {
 
         {/* Automatic engine toggles */}
         <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            Automatische Berechnung
+          <SectionHeading n={3} title="Pensionskasse & automatische Berechnung" />
+
+          {/* PK-Ausweis: switch to statement mode + reveal manual BVG fields */}
+          <label className="mt-4 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-background px-4 py-3 transition-colors hover:border-primary/50">
+            <span className="flex items-center gap-2.5">
+              <Upload className="h-4 w-4 text-primary" aria-hidden="true" />
+              <span className="text-sm font-semibold text-foreground">
+                {pkFileName ? pkFileName : "PK-Ausweis erfassen"}
+              </span>
+            </span>
+            <span className="text-[11px] font-semibold text-muted-foreground">
+              {pkFileName ? "Werte manuell übertragen" : "PDF/Bild wählen"}
+            </span>
+            <input
+              type="file"
+              accept="application/pdf,image/*"
+              className="sr-only"
+              onChange={(e) => {
+                const f = e.target.files?.[0]
+                if (!f) return
+                setPkFileName(f.name)
+                setBvgMode("statement")
+                setExpert(true)
+              }}
+            />
+          </label>
+          <p className="mt-2 text-[11.5px] leading-relaxed text-muted-foreground">
+            Übertragen Sie die Renten aus dem Vorsorgeausweis unten in die Expertenfelder. Ohne Ausweis rechnen wir mit
+            dem BVG-Minimum.
           </p>
+
           <div className="mt-4 flex flex-col gap-3">
             <ToggleRow
               label="AHV/IV-Rente nach Skala 44"
@@ -206,17 +275,31 @@ export function PensionGapCalc({ defaults }: Props) {
           </div>
         </div>
 
-        {/* Manual / resolved values */}
+        {/* Manual / resolved values — expert overrides */}
         <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-            {RISK_HEADINGS[risk]} (Jahresbeträge)
-          </p>
+          <div className="flex items-center justify-between gap-3">
+            <SectionHeading n={4} title={`${RISK_HEADINGS[risk]} (Jahresbeträge)`} />
+            <button
+              type="button"
+              onClick={() => setExpert((v) => !v)}
+              aria-expanded={expert}
+              className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+            >
+              Expertenfelder
+              <ChevronDown
+                className={`h-3.5 w-3.5 transition-transform ${expert ? "rotate-180" : ""}`}
+                aria-hidden="true"
+              />
+            </button>
+          </div>
           <div className="mt-4 flex flex-col gap-3">
             {CONFIGS[risk]
               .filter(([key]) => !(risk === "iv" && key === "uvg" && cause !== "accident"))
               .map(([key, name]) => {
                 const locked = !!resolved.locked[key]
                 const value = resolved.values[risk][key] || 0
+                // Editable only in expert mode; otherwise show the resolved value read-only.
+                const editable = expert && !locked
                 return (
                   <div key={key} className="flex items-center gap-3">
                     <span
@@ -225,12 +308,7 @@ export function PensionGapCalc({ defaults }: Props) {
                       aria-hidden="true"
                     />
                     <label className="flex-1 text-sm text-foreground">{name}</label>
-                    {locked ? (
-                      <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm font-semibold tabular-nums text-foreground">
-                        <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                        {formatCHF(value)}
-                      </span>
-                    ) : (
+                    {editable ? (
                       <input
                         type="number"
                         inputMode="numeric"
@@ -239,11 +317,22 @@ export function PensionGapCalc({ defaults }: Props) {
                         className="w-36 rounded-md border border-border bg-background px-3 py-1.5 text-right text-sm tabular-nums text-foreground focus:border-primary focus:outline-none"
                         placeholder="0"
                       />
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 rounded-md bg-muted px-3 py-1.5 text-sm font-semibold tabular-nums text-foreground">
+                        {locked ? <Lock className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" /> : null}
+                        {formatCHF(value)}
+                      </span>
                     )}
                   </div>
                 )
               })}
           </div>
+          {!expert && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Werte automatisch berechnet. Über „Expertenfelder" können Sie einzelne Renten aus dem Vorsorgeausweis
+              überschreiben.
+            </p>
+          )}
           {resolved.childCapped && (
             <p className="mt-3 text-xs text-muted-foreground">
               Kinderrenten wurden auf die 90 %-Überentschädigungsgrenze gekürzt.
@@ -326,6 +415,7 @@ export function PensionGapCalc({ defaults }: Props) {
         </div>
       </div>
     </div>
+    </>
   )
 }
 

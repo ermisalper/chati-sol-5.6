@@ -5,6 +5,7 @@ import useSWR from "swr"
 import { ArrowUpRight } from "lucide-react"
 import { ageGroupFromBirthYear, compareFranchises, type AgeGroup } from "@/lib/engine/franchise"
 import { formatCHF } from "@/lib/format"
+import { CalcActionBar, type CalcContext } from "@/components/portal/rechner/calc-action-bar"
 
 type Location = { b: number; c: string; g: string; r: number; p: number; o: string }
 type Offer = { r: number; a: AgeGroup; i: number; u: string; y: string; t: string; n: string; s: string; p: [number, number][] }
@@ -30,7 +31,13 @@ const fetcher = (url: string) => fetch(url).then((r) => {
 
 const offerKey = (o: Offer) => [o.i, o.y, o.t, o.n, o.s].join("|")
 
-export function FranchiseCalc({ defaults }: { defaults?: { plz?: string; birthYear?: string } }) {
+export function FranchiseCalc({
+  defaults,
+  ctx,
+}: {
+  defaults?: { plz?: string; birthYear?: string }
+  ctx?: CalcContext
+}) {
   const { data: locations } = useSWR<Location[]>("/data/priminfo-2026/locations.json", fetcher)
   const { data: insurers } = useSWR<Insurers>("/data/priminfo-2026/insurers.json", fetcher)
 
@@ -135,6 +142,40 @@ export function FranchiseCalc({ defaults }: { defaults?: { plz?: string; birthYe
   const orderedByFranchise = useMemo(() => [...comparison].sort((a, b) => a.franchise - b.franchise), [comparison])
 
   return (
+    <>
+    <CalcActionBar
+      ctx={ctx ?? {}}
+      calcKey="health-franchise"
+      buildPayload={() => ({
+        calculator: "health-franchise",
+        inputs: {
+          ort: location ? `${location.p} ${location.o}` : query,
+          geburtsjahr: birthYear,
+          unfalldeckung: accident,
+          versicherer: insurerId && insurers ? insurers[insurerId] : "",
+          tarif: selectedOffer?.n ?? "",
+          gesundheitskosten: healthCosts,
+        },
+        results: ready
+          ? [
+              `Beste Franchise CHF ${best.franchise}`,
+              `Jahreskosten ${formatCHF(best.annualTotal)}`,
+              savings > 0 ? `Ersparnis ${formatCHF(savings)}/Jahr` : "Bereits optimal",
+            ]
+          : ["Noch keine Auswahl getroffen"],
+      })}
+      onReset={() => {
+        setLocation(null)
+        setQuery(defaults?.plz ?? "")
+        setBirthYear(defaults?.birthYear ?? "")
+        setAccident("MIT")
+        setInsurerId("")
+        setTariffKey("")
+        setCurrentFranchise(null)
+        setHealthCosts(1200)
+        setReserve(3000)
+      }}
+    />
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
       {/* Input panel */}
       <form className="rounded-2xl border border-border bg-card p-5" onSubmit={(e) => e.preventDefault()}>
@@ -488,6 +529,7 @@ export function FranchiseCalc({ defaults }: { defaults?: { plz?: string; birthYe
         </p>
       </section>
     </div>
+    </>
   )
 }
 

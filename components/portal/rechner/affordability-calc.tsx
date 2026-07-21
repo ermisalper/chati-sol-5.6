@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react"
 import { affordability, maxAffordable, RULES } from "@/lib/engine/affordability"
 import { formatCHF } from "@/lib/format"
+import { CalcActionBar, type CalcContext } from "@/components/portal/rechner/calc-action-bar"
 
 type Field = "wert" | "ek" | "inc"
 
@@ -12,10 +13,11 @@ const SLIDERS: Record<Field, { min: number; max: number; step: number }> = {
   inc: { min: 60000, max: 400000, step: 5000 },
 }
 
-export function AffordabilityCalc({ defaults }: { defaults?: { income?: number } }) {
+export function AffordabilityCalc({ defaults, ctx }: { defaults?: { income?: number }; ctx?: CalcContext }) {
+  const defaultInc = defaults?.income && defaults.income > 0 ? defaults.income : 150000
   const [wert, setWert] = useState(1000000)
   const [ek, setEk] = useState(200000)
-  const [inc, setInc] = useState(defaults?.income && defaults.income > 0 ? defaults.income : 150000)
+  const [inc, setInc] = useState(defaultInc)
 
   const r = useMemo(() => affordability({ wert, eigenkapital: ek, bruttoeinkommenJahr: inc }), [wert, ek, inc])
   const maxPrice = useMemo(() => maxAffordable(inc, ek), [inc, ek])
@@ -37,6 +39,27 @@ export function AffordabilityCalc({ defaults }: { defaults?: { income?: number }
   const totalLast = r.gesamtlast || 1
 
   return (
+    <>
+    <CalcActionBar
+      ctx={ctx ?? {}}
+      calcKey="real-estate-affordability"
+      buildPayload={() => ({
+        calculator: "real-estate-affordability",
+        inputs: { kaufpreis: wert, eigenkapital: ek, bruttoeinkommen: inc },
+        results: [
+          `Tragbarkeit ${quoteText} %`,
+          r.tragbar ? "Tragbar" : "Nicht tragbar",
+          `Max. Kaufpreis ${formatCHF(maxPrice)}`,
+          `Belehnung ${r.belehnung.toFixed(0)} %`,
+          `Wohnkosten/Jahr ${formatCHF(r.gesamtlast)}`,
+        ],
+      })}
+      onReset={() => {
+        setWert(1000000)
+        setEk(200000)
+        setInc(defaultInc)
+      }}
+    />
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[340px_minmax(0,1fr)]">
       {/* Inputs */}
       <section aria-label="Eingaben" className="rounded-2xl border border-border bg-card p-5">
@@ -163,6 +186,7 @@ export function AffordabilityCalc({ defaults }: { defaults?: { income?: number }
         </p>
       </section>
     </div>
+    </>
   )
 }
 

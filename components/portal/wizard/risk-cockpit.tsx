@@ -22,7 +22,11 @@ const AREA_CALCULATORS: Partial<Record<AreaKey, { base: string; label: string }>
 }
 
 /** Builds a calculator href, prefilled with what we already know from the profiling. */
-function calculatorHref(key: AreaKey, answers: WizardAnswers): string | null {
+function calculatorHref(
+  key: AreaKey,
+  answers: WizardAnswers,
+  ids: { analysisId?: string; customerId?: string },
+): string | null {
   const calc = AREA_CALCULATORS[key]
   if (!calc) return null
   const params = new URLSearchParams()
@@ -41,6 +45,9 @@ function calculatorHref(key: AreaKey, answers: WizardAnswers): string | null {
     if (plz) params.set("plz", plz)
     if (age) params.set("birthYear", String(new Date().getFullYear() - age))
   }
+  // Carry the analysis context so "In Analyse übernehmen" can write back.
+  if (ids.analysisId) params.set("aid", ids.analysisId)
+  if (ids.customerId) params.set("cid", ids.customerId)
   const qs = params.toString()
   return qs ? `${calc.base}?${qs}` : calc.base
 }
@@ -62,10 +69,14 @@ export function RiskCockpit({
   answers,
   themeStatus,
   onStatusChange,
+  analysisId,
+  customerId,
 }: {
   answers: WizardAnswers
   themeStatus: Record<string, ThemeStatus>
   onStatusChange: (key: AreaKey, status: ThemeStatus) => void
+  analysisId?: string
+  customerId?: string
 }) {
   const [filter, setFilter] = useState<Filter>("all")
   const s = useMemo(() => scores(answers), [answers])
@@ -173,7 +184,7 @@ export function RiskCockpit({
                   </label>
 
                   {(() => {
-                    const href = calculatorHref(a.key, answers)
+                    const href = calculatorHref(a.key, answers, { analysisId, customerId })
                     const calc = AREA_CALCULATORS[a.key]
                     if (!href || !calc) return null
                     return (

@@ -91,6 +91,53 @@ export async function getAnalysisLockVersion(analysisId: string): Promise<number
   }
 }
 
+export type SaveCalculatorResult = { ok: true } | { ok: false; error: string }
+
+/**
+ * Merges a calculator result into an existing analysis snapshot under
+ * `calculatorResults[key]`, preserving the current step/question/progress.
+ * Reads a fresh lock_version right before saving to avoid conflicts.
+ */
+export async function saveCalculatorResult(input: {
+  analysisId: string
+  key: string
+  payload: Record<string, unknown>
+}): Promise<SaveCalculatorResult> {
+  try {
+    const advisor = await getCurrentAdvisor()
+    if (!advisor) return { ok: false, error: "Nicht angemeldet." }
+
+    const supabase = await createClient()
+    const { data: row, error: readErr } = await supabase
+      .from("analyses")
+      .select("lock_version,current_step,current_question,progress_percent,latest_snapshot")
+      .eq("id", input.analysisId)
+      .maybeSingle()
+    if (readErr || !row) return { ok: false, error: readErr?.message ?? "Analyse nicht gefunden." }
+
+    const current = (row.latest_snapshot as Record<string, unknown> | null) ?? {}
+    const calcResults = { ...((current.calculatorResults as Record<string, unknown>) ?? {}) }
+    calcResults[input.key] = { ...input.payload, savedAt: new Date().toISOString() }
+    const snapshot = { ...current, calculatorResults: calcResults }
+
+    const { error } = await supabase.rpc("save_analysis_snapshot", {
+      p_analysis_id: input.analysisId,
+      p_expected_lock_version: Number(row.lock_version),
+      p_step: Number(row.current_step ?? 3),
+      p_question: Number(row.current_question ?? 0),
+      p_progress: Number(row.progress_percent ?? 0),
+      p_snapshot: snapshot,
+      p_complete: false,
+    })
+    if (error) return { ok: false, error: error.message }
+
+    revalidatePath(`/analyse/${input.analysisId}`)
+    return { ok: true }
+  } catch (err) {
+    return { ok: false, error: err instanceof Error ? err.message : "Übernahme fehlgeschlagen." }
+  }
+}
+
 /**
  * Persists a wizard snapshot via the optimistic-locking RPC. The client passes
  * the lock_version it last saw; a mismatch raises 40001, which the caller

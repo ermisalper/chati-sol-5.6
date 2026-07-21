@@ -11,10 +11,11 @@ export const metadata: Metadata = {
 export default async function TragbarkeitPage({
   searchParams,
 }: {
-  searchParams: Promise<{ income?: string }>
+  searchParams: Promise<{ income?: string; aid?: string; cid?: string }>
 }) {
   const sp = await searchParams
   const income = Number(sp.income) || undefined
+  const ctx = { analysisId: sp.aid, customerId: sp.cid }
   return (
     <CalcShell
       eyebrow="Wohneigentum · Tragbarkeit"
@@ -24,7 +25,7 @@ export default async function TragbarkeitPage({
       backLabel="Rechner"
       chip="Schweizer Standard"
     >
-      <AffordabilityCalc defaults={{ income }} />
+      <AffordabilityCalc defaults={{ income }} ctx={ctx} />
     </CalcShell>
   )
 }

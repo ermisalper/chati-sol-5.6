@@ -10,9 +10,10 @@ export const metadata: Metadata = {
 export default async function FranchisePage({
   searchParams,
 }: {
-  searchParams: Promise<{ plz?: string; birthYear?: string }>
+  searchParams: Promise<{ plz?: string; birthYear?: string; aid?: string; cid?: string }>
 }) {
   const sp = await searchParams
+  const ctx = { analysisId: sp.aid, customerId: sp.cid }
   return (
     <CalcShell
       eyebrow="Grundversicherung"
@@ -22,7 +23,7 @@ export default async function FranchisePage({
       backLabel="Rechner"
       chip="BAG-Prämien 2026"
     >
-      <FranchiseCalc defaults={{ plz: sp.plz, birthYear: sp.birthYear }} />
+      <FranchiseCalc defaults={{ plz: sp.plz, birthYear: sp.birthYear }} ctx={ctx} />
     </CalcShell>
   )
 }

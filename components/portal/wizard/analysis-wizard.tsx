@@ -329,6 +329,8 @@ export function AnalysisWizard({
               answers={answers}
               themeStatus={themeStatus}
               onStatusChange={(key: AreaKey, s) => setThemeStatus((prev) => ({ ...prev, [key]: s }))}
+              analysisId={analysisId}
+              customerId={customerId}
             />
           </div>
           <div className="mt-7 flex items-center justify-between gap-3">
