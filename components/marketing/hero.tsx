@@ -44,32 +44,37 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="relative">
-            <div
-              aria-hidden="true"
-              className="select-none text-right font-bold leading-none tracking-tighter text-primary/10"
-              style={{ fontSize: "clamp(7rem, 16vw, 13rem)" }}
-            >
-              8
-            </div>
-            <dl className="mt-2 grid grid-cols-3 gap-4 border-t border-border pt-6">
-              <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-[0_20px_50px_-24px_rgba(17,29,54,0.35)] sm:p-8">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Analyse im Überblick
+            </p>
+            <dl className="mt-5 divide-y divide-border">
+              <div className="flex items-baseline justify-between gap-4 pb-4">
+                <dd className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">8</dd>
+                <dt className="text-right text-sm font-medium leading-tight text-muted-foreground">
                   Lebensbereiche
+                  <span className="block text-xs text-muted-foreground/70">
+                    Vorsorge bis Vermögen
+                  </span>
                 </dt>
-                <dd className="mt-1 text-2xl font-bold text-foreground">8</dd>
               </div>
-              <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              <div className="flex items-baseline justify-between gap-4 py-4">
+                <dd className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">19</dd>
+                <dt className="text-right text-sm font-medium leading-tight text-muted-foreground">
                   Fragen
+                  <span className="block text-xs text-muted-foreground/70">
+                    strukturierter Dialog
+                  </span>
                 </dt>
-                <dd className="mt-1 text-2xl font-bold text-foreground">19</dd>
               </div>
-              <div>
-                <dt className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                  Rechner
+              <div className="flex items-baseline justify-between gap-4 pt-4">
+                <dd className="text-4xl font-bold tracking-tight text-primary sm:text-5xl">3+</dd>
+                <dt className="text-right text-sm font-medium leading-tight text-muted-foreground">
+                  Schweizer Rechner
+                  <span className="block text-xs text-muted-foreground/70">
+                    deterministisch geprüft
+                  </span>
                 </dt>
-                <dd className="mt-1 text-2xl font-bold text-foreground">3+</dd>
               </div>
             </dl>
           </div>
