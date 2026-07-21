@@ -20,6 +20,9 @@ export const BUILT_ROUTES = new Set<string>([
   "/rechner/vorsorge",
   "/rechner/franchise",
   "/rechner/tragbarkeit",
+  "/rechner/ahv",
+  "/rechner/budget",
+  "/rechner/vermoegen",
 ])
 
 export const THEME_TOOLS: Record<string, ThemeTool> = {
