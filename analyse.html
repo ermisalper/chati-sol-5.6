@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; connect-src 'self' https://ljctbyscjukowyfwcpbf.supabase.co wss://ljctbyscjukowyfwcpbf.supabase.co; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -365,6 +367,7 @@
   </section>
 </div>
 
+<script src="assets/combinvest-secure.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="supabase-auth.js"></script>
@@ -375,6 +378,8 @@
 <script>
 async function initAnalysis(){
   "use strict";
+  await (window.Combinvest ? window.Combinvest.ready : Promise.resolve());
+  var Store=(window.Combinvest&&window.Combinvest.store)||{get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},remove:function(k){try{localStorage.removeItem(k);}catch(e){}}};
 
   /* =============== Fragenkatalog (combinvest Finanzstatus Check, 19 Fragen) =============== */
   var Q = [
@@ -437,8 +442,8 @@ async function initAnalysis(){
   function loadState(){
     defaults();
     try{
-      var raw=CLOUD_ANALYSIS.latest_snapshot&&CLOUD_ANALYSIS.latest_snapshot.answers?JSON.stringify(CLOUD_ANALYSIS.latest_snapshot):localStorage.getItem(STORAGE_KEY);
-      if(!raw&&window.CombinvestCRM&&CombinvestCRM.customerId==="local-demo") raw=localStorage.getItem("combinvest.customerProfile.v1");
+      var raw=CLOUD_ANALYSIS.latest_snapshot&&CLOUD_ANALYSIS.latest_snapshot.answers?JSON.stringify(CLOUD_ANALYSIS.latest_snapshot):Store.get(STORAGE_KEY);
+      if(!raw&&window.CombinvestCRM&&CombinvestCRM.customerId==="local-demo") raw=Store.get("combinvest.customerProfile.v1");
       var saved=JSON.parse(raw||"null");
       if(!saved||!saved.answers) return;
       state.step=Math.max(1,Math.min(3,+saved.step||1));
@@ -456,7 +461,7 @@ async function initAnalysis(){
     var serial={step:state.step,question:qi,answered:state.answered,contracts:state.contracts,
       notizen:state.notizen,themeStatus:state.themeStatus,updatedAt:new Date().toISOString(),answers:{}};
     Q.forEach(function(q){var v=state.answers[q.id];serial.answers[q.id]=v instanceof Set?Array.from(v):v;});
-    try{localStorage.setItem(STORAGE_KEY,JSON.stringify(serial));}catch(err){console.warn("Profil konnte nicht gespeichert werden.",err);}
+    try{Store.set(STORAGE_KEY,JSON.stringify(serial));}catch(err){console.warn("Profil konnte nicht gespeichert werden.",err);}
     scheduleCloudSave(serial,false);
   }
   var cloudSaveTimer=null,cloudSaving=false,pendingCloudSave=null,lastCloudSaveOk=true;

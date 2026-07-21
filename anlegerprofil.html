@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; upgrade-insecure-requests">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
   <title>combinvest — Anlegerprofil</title>
   <style>
     :root{--b:#3978f6;--n:#111d36;--m:#68758c;--l:#dde5f0;--p:#f4f7fb}*{box-sizing:border-box}
@@ -23,6 +25,7 @@
   <section class="card" id="quiz"><div class="progress-head"><span id="progressText">Frage 1 von 8</span><span>Automatisch gespeichert</span></div><div class="progress"><i id="fill"></i></div><div class="q" id="question"></div><div class="opts" id="options"></div><div class="actions"><button class="btn" id="back">Zurück</button><button class="btn primary" id="next">Weiter</button></div></section>
   <section class="card result hidden" id="result"><div class="eyebrow">Ihr Ergebnis</div><h2>Vorläufiges Risikoprofil</h2><div class="gauge" id="gauge"><b id="score"></b></div><h2 id="profile"></h2><p id="explain"></p><div class="bars"><div><small>Risikobereitschaft</small><b id="will"></b></div><div><small>Tragfähigkeit</small><b id="capacity"></b></div><div><small>Erfahrung</small><b id="knowledge"></b></div></div><p class="note">Das Ergebnis ist die Grundlage für das Beratungsgespräch. Die endgültige Empfehlung berücksichtigt zusätzlich Ziele, finanzielle Verhältnisse und vorhandene Anlagen.</p><div class="actions"><a class="btn" href="thema.html?t=investment">Zurück zu Vermögen</a><button class="btn primary" id="restart">Neu starten</button></div></section>
 </main>
+<script src="assets/combinvest-secure.js"></script>
 <script src="crm-session.js?v=14"></script>
 <script>
 (function(){

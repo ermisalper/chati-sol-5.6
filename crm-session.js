@@ -24,12 +24,22 @@
   }catch(e){}
 
   function storageKey(module){return PREFIX+customerId+"."+safeId(module)+".v"+VERSION;}
+  /* Speicher-Indirektion: verschluesselter Combinvest-Store (AES-GCM) wenn
+     geladen, sonst localStorage-Fallback. API bleibt unveraendert. */
+  function getStore(){
+    if(global.Combinvest&&global.Combinvest.store) return global.Combinvest.store;
+    return {
+      get:function(k){try{return localStorage.getItem(k);}catch(e){return null;}},
+      set:function(k,v){try{localStorage.setItem(k,v);}catch(e){}},
+      remove:function(k){try{localStorage.removeItem(k);}catch(e){}}
+    };
+  }
   function load(module,fallback){
-    try{var raw=localStorage.getItem(storageKey(module));return raw?JSON.parse(raw):fallback;}catch(e){return fallback;}
+    try{var raw=getStore().get(storageKey(module));return raw?JSON.parse(raw):fallback;}catch(e){return fallback;}
   }
   function save(module,data){
     var record={customerId:customerId,module:module,updatedAt:new Date().toISOString(),data:data};
-    try{localStorage.setItem(storageKey(module),JSON.stringify(record));}catch(e){return false;}
+    try{getStore().set(storageKey(module),JSON.stringify(record));}catch(e){return false;}
     return true;
   }
   function data(module,fallback){var record=load(module,null);return record&&record.data!=null?record.data:fallback;}
@@ -79,7 +89,6 @@
       if(target)anchor.setAttribute("href",target);
     });
   }
-
   function syncCurrentUrl(){
     var page=(location.pathname.split("/").pop()||"").toLowerCase();
     if(["index.html","login.html","dashboard.html"].indexOf(page)>=0)return;
@@ -121,7 +130,8 @@
     save:save,
     url:url,
     backUrl:backUrl,
-    propagateLinks:propagateLinks
+    propagateLinks:propagateLinks,
+    ready:(global.Combinvest&&global.Combinvest.ready)||Promise.resolve()
   };
 
   function loadShell(){
