@@ -137,45 +137,34 @@ export function ClosingFlow({
         Zur Risikoanalyse
       </Link>
 
-      {/* Hero */}
-      <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-card p-6">
-        <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Letzter Schritt der Beratung</p>
-          <h1 className="mt-1 text-2xl font-extrabold text-foreground">Beratung abschliessen</h1>
-          <p className="mt-1 max-w-xl text-sm leading-relaxed text-muted-foreground">
-            Prüfen Sie die Beratung mit {customerName}, klären Sie offene Punkte und erstellen Sie die Unterlagen für
-            Kunde und Innendienst.
-          </p>
-        </div>
-        <span
-          className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-            done ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {done ? "Abgeschlossen" : "Abschluss offen"}
-        </span>
-      </div>
-
-      {/* Flow steps */}
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {["Beratung prüfen", "Offenes klären", "Dokumente & Termin", "Verbindlich abschliessen"].map((label, i) => (
-          <div key={label} className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2.5">
-            <span className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-              {i + 1}
-            </span>
-            <span className="text-xs font-semibold text-foreground">{label}</span>
+      {/* Header with integrated progress */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card">
+        <div className="flex flex-wrap items-start justify-between gap-4 p-6">
+          <div>
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-primary">Letzter Schritt der Beratung</p>
+            <h1 className="mt-1 text-2xl font-extrabold text-foreground">Beratung abschliessen</h1>
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              Prüfen Sie die Beratung mit {customerName}, klären Sie offene Punkte und erstellen Sie die Unterlagen für
+              Kunde und Innendienst.
+            </p>
           </div>
-        ))}
-      </div>
-
-      {/* Progress */}
-      <div className="mt-3 rounded-2xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between text-sm">
-          <strong className="font-bold text-foreground">Vorbereitung des Abschlusses</strong>
-          <span className="text-muted-foreground">{progressPct}% bereit</span>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ${
+              done ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+            }`}
+          >
+            {done ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+            {done ? "Abgeschlossen" : "Abschluss offen"}
+          </span>
         </div>
-        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
+        <div className="border-t border-border bg-muted/30 px-6 py-4">
+          <div className="flex items-center justify-between text-xs">
+            <strong className="font-bold text-foreground">Vorbereitung des Abschlusses</strong>
+            <span className="font-semibold text-muted-foreground">{progressPct}% bereit</span>
+          </div>
+          <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
+          </div>
         </div>
       </div>
 
@@ -209,11 +198,6 @@ export function ClosingFlow({
                 </div>
               </div>
             )}
-            <div className="mt-4 flex flex-wrap gap-2">
-              <Link href={`/analyse/${analysisId}`} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted">
-                Risikoanalyse öffnen
-              </Link>
-            </div>
           </section>
 
           {/* 2 – Offene Punkte */}
@@ -233,16 +217,16 @@ export function ClosingFlow({
                 Alle relevanten Themen sind als erledigt markiert.
               </p>
             ) : (
-              <div className="mt-4 grid gap-2">
+              <div className="mt-4 grid gap-2 sm:grid-cols-2">
                 {openAreas.map((a) => (
-                  <div key={a.key} className="flex items-start justify-between gap-3 rounded-xl border border-border bg-background p-3.5">
-                    <div>
-                      <p className="text-sm font-bold text-foreground">{a.name}</p>
-                      <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">{a.recommendation}</p>
+                  <div key={a.key} className="flex flex-col gap-2 rounded-xl border border-border bg-background p-3.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-bold leading-tight text-foreground">{a.name}</p>
+                      <span className={`flex-none rounded-full px-2 py-0.5 text-[10px] font-semibold ${STATUS_META[a.status].cls}`}>
+                        {STATUS_META[a.status].label}
+                      </span>
                     </div>
-                    <span className={`flex-none rounded-full px-2.5 py-1 text-[11px] font-semibold ${STATUS_META[a.status].cls}`}>
-                      {STATUS_META[a.status].label}
-                    </span>
+                    <p className="text-xs leading-relaxed text-muted-foreground">{a.recommendation}</p>
                   </div>
                 ))}
               </div>
@@ -324,7 +308,7 @@ export function ClosingFlow({
           {/* Sealth + Empfehlung */}
           <section className="rounded-2xl border border-border bg-card p-5">
             <SectionHead
-              n="+"
+              n={5}
               title="Sealth und Empfehlung"
               desc="Optionalen Service-Vorteil oder eine Weiterempfehlung erfassen."
               badge={
@@ -334,7 +318,7 @@ export function ClosingFlow({
               }
             />
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href="/sealth" className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted">
+              <Link href={`/sealth?aid=${analysisId}`} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted">
                 <Sparkles className="h-3.5 w-3.5" /> Sealth prüfen
               </Link>
               <Link href={`/analyse/${analysisId}/empfehlung`} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3.5 py-2 text-xs font-semibold text-foreground transition-colors hover:bg-muted">
@@ -348,7 +332,7 @@ export function ClosingFlow({
       {/* 5 – Final */}
       <section className="mt-3 rounded-2xl border border-border bg-card p-6">
         <SectionHead
-          n={5}
+          n={6}
           title="Beratung verbindlich abschliessen"
           desc="Bestätigen Sie gemeinsam, dass der Beratungsstand vollständig dokumentiert wurde."
         />
