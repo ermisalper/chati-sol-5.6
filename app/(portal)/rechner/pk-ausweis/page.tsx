@@ -7,7 +7,13 @@ export const metadata: Metadata = {
   description: "Erfassen Sie die wichtigsten Werte aus dem Vorsorgeausweis der Pensionskasse als Grundlage für die Vorsorgeanalyse.",
 }
 
-export default async function PkAusweisPage() {
+export default async function PkAusweisPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aid?: string; cid?: string }>
+}) {
+  const sp = await searchParams
+  const ctx = { analysisId: sp.aid, customerId: sp.cid }
   return (
     <CalcShell
       eyebrow="2. Säule · Datenerfassung"
@@ -19,7 +25,7 @@ export default async function PkAusweisPage() {
       explain="Die erfassten Leistungen werden in der Zusammenfassung übersichtlich dargestellt."
       source="Angaben stammen aus dem persönlichen Vorsorgeausweis Ihrer Pensionskasse."
     >
-      <PkAusweisCalc />
+      <PkAusweisCalc ctx={ctx} />
     </CalcShell>
   )
 }
