@@ -10,11 +10,23 @@ type DocDef = { id: string; name: string; tag: string; file: string; checked?: b
 
 const DEFINITIONS: DocDef[] = [
   { id: "protocol", name: "Beratungsprotokoll Combinvest", tag: "Standard", file: "/documents/templates/beratungsprotokoll-vorlage.pdf", checked: true },
+  { id: "generalvollmacht", name: "Generalvollmacht", tag: "Vollmacht", file: "" },
   { id: "vag", name: "Informationspflichten gemäss VAG", tag: "Versicherung", file: "/documents/templates/vag-informationspflicht.pdf" },
+  { id: "kk", name: "Kündigung Krankenkasse", tag: "Kündigung", file: "" },
+  { id: "sach", name: "Kündigung Sachversicherung", tag: "Kündigung", file: "" },
   { id: "private", name: "Maklermandat Combinvest (Privatperson)", tag: "Privatkunde", file: "/documents/templates/maklermandat-privat.pdf" },
   { id: "company", name: "Maklermandat Combinvest (Firma)", tag: "Firmenkunde", file: "/documents/templates/maklermandat-firma.pdf" },
+  { id: "triveso-private", name: "Maklermandat Triveso (Privatperson)", tag: "Privatkunde", file: "/documents/templates/maklermandat-triveso-privat.pdf" },
+  { id: "triveso-company", name: "Maklermandat Triveso (Firma)", tag: "Firmenkunde", file: "/documents/templates/maklermandat-triveso-firma.pdf" },
   { id: "pension", name: "Vollmacht Vorsorgeinformationen", tag: "Vorsorge", file: "/documents/templates/vollmacht-vorsorgeinformationen.pdf" },
   { id: "pk", name: "PK-Gelder einholen", tag: "Vorsorge", file: "/documents/templates/pk-gelder-einholen.pdf" },
+]
+
+const KK_COMPANIES = [
+  "Agrisano", "AKKB", "Aquilana", "Assura", "Atupri", "Avenir (Groupe Mutuel)", "CONCORDIA", "CSS", "Easy Sana (Groupe Mutuel)", "EGK", "Helsana", "KLuG", "KPT", "Mutuel (Groupe Mutuel)", "ÖKK", "Philos (Groupe Mutuel)", "Sanitas", "sana24", "Sumiswalder", "SWICA", "Sympany", "Visana", "Vivao Sympany", "Andere",
+]
+const SACH_COMPANIES = [
+  "Allianz Suisse", "AXA", "Baloise", "Die Mobiliar", "Generali", "Helvetia", "Smile", "Vaudoise", "Zurich", "Andere",
 ]
 
 type ProtocolGroup = { id: string; title: string; topic?: string; questions: string[] }
@@ -82,6 +94,16 @@ type Pk = {
   attachments: number[]
   death: PkDeath
 }
+type Cancellation = {
+  kkCompany: string
+  kkPolicy: string
+  kkScope: string[]
+  kkDate: string
+  sachCompany: string
+  sachPolicy: string
+  sachDate: string
+}
+type GeneralPower = { scope: string; note: string }
 
 export function DocumentBuilder({
   analysisId,
@@ -133,6 +155,16 @@ export function DocumentBuilder({
     attachments: [],
     death: { enabled: false, deathDate: "", survivorLast: "", survivorFirst: "", survivorBirth: "", relationship: "", survivorAddress: "" },
   })
+  const [cancel, setCancel] = useState<Cancellation>({
+    kkCompany: "",
+    kkPolicy: "",
+    kkScope: ["KVG"],
+    kkDate: "",
+    sachCompany: "",
+    sachPolicy: "",
+    sachDate: "",
+  })
+  const [power, setPower] = useState<GeneralPower>({ scope: "Versicherungs- und Vorsorgeangelegenheiten", note: "" })
   const [advisorLater, setAdvisorLater] = useState(false)
   const [consent, setConsent] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -147,6 +179,9 @@ export function DocumentBuilder({
   const toggleDoc = (id: string) => setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
   const protocolOn = selected.includes("protocol")
   const pkOn = selected.includes("pk")
+  const kkOn = selected.includes("kk")
+  const sachOn = selected.includes("sach")
+  const powerOn = selected.includes("generalvollmacht")
 
   const selectedDefs = useMemo(() => DEFINITIONS.filter((d) => selected.includes(d.id)), [selected])
 
@@ -209,11 +244,137 @@ export function DocumentBuilder({
         return false
       }
     }
+    if (n === 4 && kkOn) {
+      if (!cancel.kkCompany || !cancel.kkDate || cancel.kkScope.length === 0) {
+        setError("Bitte Gesellschaft, gekündigten Bereich und Kündigungsdatum der Krankenkasse angeben.")
+        return false
+      }
+    }
+    if (n === 4 && sachOn) {
+      if (!cancel.sachCompany || !cancel.sachPolicy || !cancel.sachDate) {
+        setError("Bitte Policennummer, Gesellschaft und Kündigungsdatum der Sachversicherung angeben.")
+        return false
+      }
+    }
     return true
+  }
+
+  async function createGeneratedPdf(def: DocDef, PDFLib: typeof import("pdf-lib")) {
+    const { PDFDocument, StandardFonts, rgb } = PDFLib
+    const pdf = await PDFDocument.create()
+    const page = pdf.addPage([595, 842])
+    const font = await pdf.embedFont(StandardFonts.Helvetica)
+    const bold = await pdf.embedFont(StandardFonts.HelveticaBold)
+    const ink = rgb(0.07, 0.12, 0.2)
+    const muted = rgb(0.4, 0.45, 0.52)
+    const brand = rgb(0.11, 0.16, 0.52)
+    const full = (f.company && type === "company" ? f.company + " / " : "") + f.firstName + " " + f.lastName
+    const dateText = (f.place || f.city) + ", " + f.date
+    const M = 64
+    let y = 780
+
+    const line = (t: string, opts: { size?: number; f?: typeof font; color?: typeof ink; gap?: number } = {}) => {
+      const size = opts.size ?? 10.5
+      page.drawText(t, { x: M, y, size, font: opts.f ?? font, color: opts.color ?? ink })
+      y -= opts.gap ?? size + 6
+    }
+    const para = (t: string, size = 10.5, lh = 15) => {
+      const words = t.split(/\s+/)
+      let ln = ""
+      const width = 595 - M * 2
+      for (const w of words) {
+        const test = (ln + " " + w).trim()
+        if (font.widthOfTextAtSize(test, size) > width && ln) {
+          page.drawText(ln, { x: M, y, size, font, color: ink })
+          y -= lh
+          ln = w
+        } else ln = test
+      }
+      if (ln) {
+        page.drawText(ln, { x: M, y, size, font, color: ink })
+        y -= lh
+      }
+      y -= 6
+    }
+
+    // Kopf
+    page.drawText("combinvest", { x: M, y, size: 22, font: bold, color: brand })
+    y -= 16
+    page.drawText("Hausimollstrasse 3 · 4622 Egerkingen · combinvest.swiss", { x: M, y, size: 8.5, font, color: muted })
+    y -= 40
+
+    if (def.id === "generalvollmacht") {
+      line("Generalvollmacht", { size: 18, f: bold, gap: 30 })
+      line("Vollmachtgeber / Auftraggeber", { size: 11, f: bold, gap: 20 })
+      line("Name / Vorname:  " + full)
+      line("Geburtsdatum:  " + (f.birthdate || "—"))
+      line("Adresse:  " + f.street + ", " + f.zip + " " + f.city)
+      line("Telefon / E-Mail:  " + f.phone + "  ·  " + f.email, { gap: 26 })
+      para(
+        "Der Vollmachtgeber erteilt der Combinvest AG bzw. dem/der bevollmächtigten Kundenberater/in " +
+          (f.advisorName || "—") +
+          " hiermit Vollmacht, ihn/sie in " +
+          power.scope +
+          " gegenüber Versicherern, Vorsorgeeinrichtungen, Behörden und weiteren Stellen zu vertreten.",
+      )
+      para(
+        "Die Vollmacht umfasst das Einholen von Auskünften und Unterlagen, die Korrespondenz sowie alle Handlungen, die zur sorgfältigen Erledigung des Auftrags erforderlich sind. Sie gilt bis zum schriftlichen Widerruf und ersetzt alle bisher erteilten Vollmachten.",
+      )
+      if (power.note) para("Zusatz: " + power.note)
+    } else if (def.id === "kk") {
+      line("Kündigung Grundversicherung / Zusatzversicherung", { size: 16, f: bold, gap: 28 })
+      line("An:  " + cancel.kkCompany, { size: 11, f: bold, gap: 20 })
+      line("Versicherte Person:  " + full)
+      line("Geburtsdatum:  " + (f.birthdate || "—"))
+      line("Adresse:  " + f.street + ", " + f.zip + " " + f.city)
+      if (cancel.kkPolicy) line("Policen-/Versichertennummer:  " + cancel.kkPolicy)
+      line("Gekündigt wird:  " + cancel.kkScope.join(" + "))
+      line("Kündigung per:  " + cancel.kkDate, { gap: 26 })
+      para(
+        "Sehr geehrte Damen und Herren, hiermit kündige ich die oben genannte Versicherung (" +
+          cancel.kkScope.join(" + ") +
+          ") fristgerecht per " +
+          cancel.kkDate +
+          ". Bitte bestätigen Sie mir die Kündigung sowie das Vertragsende schriftlich.",
+      )
+    } else if (def.id === "sach") {
+      line("Kündigung Sachversicherung", { size: 16, f: bold, gap: 28 })
+      line("An:  " + cancel.sachCompany, { size: 11, f: bold, gap: 20 })
+      line("Versicherungsnehmer:  " + full)
+      line("Adresse:  " + f.street + ", " + f.zip + " " + f.city)
+      line("Policennummer:  " + cancel.sachPolicy)
+      line("Kündigung per:  " + cancel.sachDate, { gap: 26 })
+      para(
+        "Sehr geehrte Damen und Herren, hiermit kündige ich die oben genannte Sachversicherung mit der Policennummer " +
+          cancel.sachPolicy +
+          " fristgerecht per " +
+          cancel.sachDate +
+          ". Bitte bestätigen Sie mir die Kündigung sowie das Vertragsende schriftlich.",
+      )
+    }
+
+    // Signaturblock
+    y = Math.min(y, 300)
+    const embedSig = async (handle: SignaturePadHandle | null) => {
+      if (!handle || handle.isEmpty()) return null
+      const raw = await fetch(handle.toDataURL()).then((r) => r.arrayBuffer())
+      return pdf.embedPng(raw)
+    }
+    const custImg = await embedSig(customerRef.current)
+    page.drawText(dateText, { x: M, y, size: 9, font, color: ink })
+    page.drawLine({ start: { x: M, y: y - 46 }, end: { x: M + 200, y: y - 46 }, thickness: 0.75, color: muted })
+    if (custImg) page.drawImage(custImg, { x: M, y: y - 44, width: 180, height: 36 })
+    page.drawText("Unterschrift " + full, { x: M, y: y - 58, size: 8, font, color: muted })
+    return pdf.save()
   }
 
   async function createPdf(def: DocDef, PDFLib: typeof import("pdf-lib")) {
     const { PDFDocument, StandardFonts, rgb } = PDFLib
+    // Dokumente ohne fertige Vorlage (Kündigungen, Generalvollmacht) werden
+    // programmatisch als sauberes Combinvest-Schreiben erzeugt.
+    if (!def.file) {
+      return createGeneratedPdf(def, PDFLib)
+    }
     const bytes = await fetch(def.file).then((r) => {
       if (!r.ok) throw new Error(def.name)
       return r.arrayBuffer()
@@ -248,6 +409,34 @@ export function DocumentBuilder({
         "Text Box 1_5": f.advisorName,
         "Text Box 1_6": f.place + ", " + f.date,
         "Text Box 1_7": f.place + ", " + f.date,
+      }
+      Object.entries(fields).forEach(([k, v]) => safeField(k, v))
+    }
+    if (def.id === "triveso-private") {
+      // Feldnamen sind zufällig; Zuordnung erfolgt über die exakte Position.
+      const fields: Record<string, string> = {
+        "Text-A0_PYS-9-8": f.salutation, // Anrede (links, y652)
+        "Text-QNCXd6HnhQ": f.birthdate, // Geburtsdatum (rechts, y653)
+        "Text-0N-N1EAc1l": f.firstName, // Vorname (links, y626)
+        "Text-j18-8a9oz5": f.lastName, // Nachname (rechts, y624)
+        "Text-3VQSSwokG-": f.street, // Strasse (links, y598)
+        "Text-TfylkX6tRv": f.zip + " " + f.city, // PLZ/Ort (rechts, y598)
+        "Text-3SUUcZKDzd": f.phone, // Telefon (links, y572)
+        "Text-Qpw5oP2k-c": f.email, // Email (rechts, y571)
+        "Text-8tapIkXUNW": (f.place || f.city) + ", " + f.date, // Ort/Datum Auftraggeber
+        "Text-qQJbfRMLiG": (f.place || f.city) + ", " + f.date, // Ort/Datum Auftragnehmer
+      }
+      Object.entries(fields).forEach(([k, v]) => safeField(k, v))
+    }
+    if (def.id === "triveso-company") {
+      const fields: Record<string, string> = {
+        "Text-3uqA1Rn3Ye": f.company || full, // Firma (breit, y626)
+        "Text-yagTWQstLB": full, // Name (links, y598)
+        "Text-kL5RHfqaAT": f.zip + " " + f.city, // PLZ/Ort (rechts, y598)
+        "Text-IqxFz4tNkR": f.street, // Strasse (links, y571)
+        "Text-qqJkVb3-Pl": f.phone + "  " + f.email, // Telefon/Email (rechts, y571)
+        "Text-ugfUrNU5WH": (f.place || f.city) + ", " + f.date, // Ort/Datum Auftraggeber
+        "Text-5Z-o08otbZ": (f.place || f.city) + ", " + f.date, // Ort/Datum Auftragnehmer
       }
       Object.entries(fields).forEach(([k, v]) => safeField(k, v))
     }
@@ -298,6 +487,12 @@ export function DocumentBuilder({
       text(mandate, f.salutation, 140, 646, 9)
       sign(mandate, customerImage, 315, 124, 205, 28)
       sign(mandate, advisorImage, 315, 78, 205, 28)
+    }
+    if (def.id === "triveso-private" || def.id === "triveso-company") {
+      // Ort/Datum-Felder liegen links (x≈50); die Unterschrift kommt rechts daneben.
+      const mandate = pages[0]
+      sign(mandate, customerImage, 300, 118, 210, 30)
+      sign(mandate, advisorImage, 300, 73, 210, 30)
     }
     if (def.id === "pension") {
       const pension = pages[0]
@@ -537,7 +732,11 @@ export function DocumentBuilder({
                     </span>
                     <span className="flex flex-col items-end gap-1">
                       <em className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold not-italic text-primary">{d.tag}</em>
-                      <a className="text-xs font-bold text-primary hover:underline" target="_blank" rel="noopener noreferrer" href={d.file}>Vorlage ansehen</a>
+                      {d.file ? (
+                        <a className="text-xs font-bold text-primary hover:underline" target="_blank" rel="noopener noreferrer" href={d.file}>Vorlage ansehen</a>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Wird automatisch erstellt</span>
+                      )}
                     </span>
                   </label>
                 )
@@ -622,7 +821,7 @@ export function DocumentBuilder({
                     <select className={INPUT} value={protocol.cancellation} onChange={(e) => setProtocol((p) => ({ ...p, cancellation: e.target.value }))}>
                       <option value="forward">Kunde erlaubt die Weiterleitung unterzeichneter Kündigungen</option>
                       <option value="self">Kunde kündigt selbst</option>
-                      <option value="none">Keine K��ndigungen erforderlich</option>
+                      <option value="none">Keine Kündigungen erforderlich</option>
                     </select>
                   </div>
                 </div>
@@ -703,6 +902,72 @@ export function DocumentBuilder({
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {kkOn && (
+              <div className="mt-6 border-t border-border pt-6">
+                <h3 className="text-base font-bold text-foreground">Kündigung Krankenkasse</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">Das Kündigungsschreiben wird mit den Kundendaten automatisch erstellt.</p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field label="Krankenkasse*">
+                    <select className={INPUT} value={cancel.kkCompany} onChange={(e) => setCancel((c) => ({ ...c, kkCompany: e.target.value }))}>
+                      <option value="">Bitte wählen</option>
+                      {KK_COMPANIES.map((k) => <option key={k}>{k}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Policen-/Versichertennummer"><input className={INPUT} value={cancel.kkPolicy} onChange={(e) => setCancel((c) => ({ ...c, kkPolicy: e.target.value }))} /></Field>
+                  <Field className="sm:col-span-2" label="Gekündigt wird*">
+                    <div className="flex flex-wrap gap-2">
+                      {["KVG (Grundversicherung)", "VVG (Zusatzversicherung)"].map((s) => {
+                        const key = s.startsWith("KVG") ? "KVG" : "VVG"
+                        const on = cancel.kkScope.includes(key)
+                        return (
+                          <label key={key} className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${on ? "border-primary bg-primary/5 text-primary" : "border-border text-foreground"}`}>
+                            <input type="checkbox" checked={on} onChange={() => setCancel((c) => ({ ...c, kkScope: on ? c.kkScope.filter((x) => x !== key) : [...c.kkScope, key] }))} className="accent-primary" />
+                            {s}
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </Field>
+                  <Field label="Kündigung per*"><input className={INPUT} type="date" value={cancel.kkDate} onChange={(e) => setCancel((c) => ({ ...c, kkDate: e.target.value }))} /></Field>
+                </div>
+              </div>
+            )}
+
+            {sachOn && (
+              <div className="mt-6 border-t border-border pt-6">
+                <h3 className="text-base font-bold text-foreground">Kündigung Sachversicherung</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">Für Hausrat, Privathaftpflicht, Motorfahrzeug und weitere Sachversicherungen.</p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field label="Gesellschaft*">
+                    <select className={INPUT} value={cancel.sachCompany} onChange={(e) => setCancel((c) => ({ ...c, sachCompany: e.target.value }))}>
+                      <option value="">Bitte wählen</option>
+                      {SACH_COMPANIES.map((k) => <option key={k}>{k}</option>)}
+                    </select>
+                  </Field>
+                  <Field label="Policennummer*"><input className={INPUT} value={cancel.sachPolicy} onChange={(e) => setCancel((c) => ({ ...c, sachPolicy: e.target.value }))} /></Field>
+                  <Field label="Kündigung per*"><input className={INPUT} type="date" value={cancel.sachDate} onChange={(e) => setCancel((c) => ({ ...c, sachDate: e.target.value }))} /></Field>
+                </div>
+              </div>
+            )}
+
+            {powerOn && (
+              <div className="mt-6 border-t border-border pt-6">
+                <h3 className="text-base font-bold text-foreground">Generalvollmacht</h3>
+                <p className="mt-0.5 text-xs text-muted-foreground">Umfang der Bevollmächtigung; Combinvest und der Berater werden automatisch eingesetzt.</p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <Field label="Umfang der Vollmacht">
+                    <select className={INPUT} value={power.scope} onChange={(e) => setPower((p) => ({ ...p, scope: e.target.value }))}>
+                      <option>Versicherungs- und Vorsorgeangelegenheiten</option>
+                      <option>Versicherungsangelegenheiten</option>
+                      <option>Vorsorgeangelegenheiten</option>
+                      <option>allen finanziellen Angelegenheiten</option>
+                    </select>
+                  </Field>
+                  <Field className="sm:col-span-2" label="Zusatz / Einschränkung"><textarea className={`${INPUT} min-h-16 resize-y`} value={power.note} onChange={(e) => setPower((p) => ({ ...p, note: e.target.value }))} placeholder="Optionale Präzisierung" /></Field>
                 </div>
               </div>
             )}
