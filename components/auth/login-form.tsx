@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { Mail, ArrowRight, Loader2, AlertCircle } from "lucide-react"
@@ -78,7 +79,10 @@ export function LoginForm({ next }: { next: string }) {
       </form>
 
       <p className="mt-6 text-center text-xs text-muted-foreground">
-        Kein Zugang? Bitte wenden Sie sich an Ihre Administration.
+        Noch kein Zugang?{" "}
+        <Link href="/register" className="font-bold text-primary hover:underline">
+          Als Combinvest-Berater registrieren
+        </Link>
       </p>
     </div>
   )

@@ -6,7 +6,7 @@ type CookieToSet = { name: string; value: string; options?: CookieOptions }
 // Routes that require an authenticated advisor session.
 const PROTECTED_PREFIXES = ["/dashboard", "/team"]
 // Auth routes an already-authenticated advisor should be bounced away from.
-const AUTH_PREFIXES = ["/login"]
+const AUTH_PREFIXES = ["/login", "/register"]
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
