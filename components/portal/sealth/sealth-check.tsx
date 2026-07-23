@@ -121,10 +121,26 @@ export function SealthCheck({ ctx }: { ctx: { analysisId?: string; customerId?: 
     },
   }
 
+  const actionBar = (
+    <CalcActionBar
+      ctx={ctx}
+      calcKey="sealth-check"
+      buildPayload={() => payload}
+      onReset={() => {
+        setDone(false)
+        setStep(0)
+        setSelected(null)
+        setAnswers(Array(QUESTIONS.length).fill(null))
+      }}
+    />
+  )
+
   if (!done) {
     const q = QUESTIONS[step]
     return (
-      <div className="mx-auto max-w-2xl">
+      <>
+        {actionBar}
+        <div className="mx-auto max-w-2xl">
         <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
           <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${(step / QUESTIONS.length) * 100}%` }} />
         </div>
@@ -173,6 +189,7 @@ export function SealthCheck({ ctx }: { ctx: { analysisId?: string; customerId?: 
           </button>
         </div>
       </div>
+      </>
     )
   }
 
@@ -187,7 +204,9 @@ export function SealthCheck({ ctx }: { ctx: { analysisId?: string; customerId?: 
   ]
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+    <>
+      {actionBar}
+      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
       {/* Recommendation */}
       <div className="rounded-2xl border border-border bg-card p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-primary">Ihre persönliche Empfehlung</p>
@@ -313,19 +332,26 @@ export function SealthCheck({ ctx }: { ctx: { analysisId?: string; customerId?: 
           >
             <ArrowLeft className="h-4 w-4" /> Antworten bearbeiten
           </button>
-          <CalcActionBar
-            ctx={ctx}
-            calcKey="sealth-check"
-            buildPayload={() => payload}
-            onReset={() => {
-              setDone(false)
-              setStep(0)
-              setSelected(null)
-              setAnswers(Array(QUESTIONS.length).fill(null))
-            }}
-          />
+          <a
+            href="https://combinvest.payrexx.com/pay?tid=c79a5502"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary-deep"
+          >
+            Paket ansehen
+            <ArrowRight className="h-4 w-4" />
+          </a>
+          <a
+            href="https://apps.apple.com/ch/app/mysealth/id1569941928"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+          >
+            MySealth App
+          </a>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

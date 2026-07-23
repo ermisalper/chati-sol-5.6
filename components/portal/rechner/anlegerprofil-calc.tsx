@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { RotateCcw, ArrowRight } from "lucide-react"
+import { CalcActionBar, type CalcContext } from "@/components/portal/rechner/calc-action-bar"
 
 type Dimension = "risk" | "horizon" | "knowledge"
 
@@ -117,7 +118,7 @@ function profileFor(score: number): Profile {
   return PROFILES.find((p) => score >= p.range[0] && score <= p.range[1]) ?? PROFILES[PROFILES.length - 1]
 }
 
-export function AnlegerprofilCalc() {
+export function AnlegerprofilCalc({ ctx }: { ctx?: CalcContext }) {
   const [answers, setAnswers] = useState<Record<string, number>>({})
 
   const answeredCount = Object.keys(answers).length
@@ -153,8 +154,21 @@ export function AnlegerprofilCalc() {
   }, [answers])
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-      {/* Questionnaire */}
+    <>
+      <CalcActionBar
+        ctx={ctx ?? {}}
+        calcKey="anlegerprofil"
+        buildPayload={() => ({
+          answers,
+          score: result.total,
+          profile: result.profile.name,
+          equity: result.profile.equity,
+          dimensions: result.pct,
+        })}
+        onReset={() => setAnswers({})}
+      />
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        {/* Questionnaire */}
       <div className="space-y-4">
         {QUESTIONS.map((q, i) => (
           <fieldset key={q.id} className="rounded-2xl border border-border bg-card p-5">
@@ -254,6 +268,7 @@ export function AnlegerprofilCalc() {
           Richtwert nach FIDLEG-Logik (Risiko 50 %, Horizont 30 %, Wissen 20 %). Ersetzt keine persönliche Anlageberatung.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   )
 }

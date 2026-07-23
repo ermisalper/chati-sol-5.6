@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import useSWR from "swr"
 import { ArrowUpRight } from "lucide-react"
 import { ageGroupFromBirthYear, compareFranchises, type AgeGroup } from "@/lib/engine/franchise"
@@ -76,6 +76,21 @@ export function FranchiseCalc({
       )
       .slice(0, 14)
   }, [locations, query])
+
+  // Wie bei Priminfo: eine vollständige PLZ (4-stellig) wird automatisch der
+  // Prämienregion zugeordnet – auch wenn sie aus der Risikoanalyse vorbefüllt
+  // wurde. So rechnet der Vergleich sofort, ohne dass ein Vorschlag angeklickt
+  // werden muss.
+  useEffect(() => {
+    if (!locations || location) return
+    const q = query.trim()
+    if (!/^\d{4}$/.test(q)) return
+    const hit = locations.find((l) => String(l.p) === q)
+    if (!hit) return
+    setLocation(hit)
+    setQuery(`${hit.p} ${hit.o}`)
+    setShowResults(false)
+  }, [locations, location, query])
 
   const offers = useMemo(() => {
     if (!cantonOffers || !location || !ageGroup) return []

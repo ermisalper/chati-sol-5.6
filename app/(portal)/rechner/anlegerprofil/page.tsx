@@ -7,7 +7,13 @@ export const metadata: Metadata = {
   description: "Ermitteln Sie in acht Fragen Risikobereitschaft, Anlagehorizont und Erfahrung – mit Richtwert für die passende Aktienquote.",
 }
 
-export default async function AnlegerprofilPage() {
+export default async function AnlegerprofilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ aid?: string; cid?: string }>
+}) {
+  const sp = await searchParams
+  const ctx = { analysisId: sp.aid, customerId: sp.cid }
   return (
     <CalcShell
       eyebrow="Anlageberatung · FIDLEG-Logik"
@@ -19,7 +25,7 @@ export default async function AnlegerprofilPage() {
       explain="Aus den Antworten wird ein gewichteter Score und ein Anlegerprofil abgeleitet."
       source="Gewichtung nach FIDLEG-Logik: Risiko 50 %, Horizont 30 %, Wissen 20 %."
     >
-      <AnlegerprofilCalc />
+      <AnlegerprofilCalc ctx={ctx} />
     </CalcShell>
   )
 }

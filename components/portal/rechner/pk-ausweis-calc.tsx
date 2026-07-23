@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import { formatCHF } from "@/lib/format"
+import { CalcActionBar, type CalcContext } from "@/components/portal/rechner/calc-action-bar"
 
 type FieldKey = "insuredSalary" | "capital" | "iv" | "ivChild" | "partner" | "orphan"
 
@@ -14,7 +15,7 @@ const FIELDS: { key: FieldKey; label: string; hint: string }[] = [
   { key: "orphan", label: "Waisenrente pro Kind", hint: "Rente je Kind im Todesfall" },
 ]
 
-export function PkAusweisCalc() {
+export function PkAusweisCalc({ ctx }: { ctx?: CalcContext }) {
   const [values, setValues] = useState<Record<FieldKey, string>>({
     insuredSalary: "",
     capital: "",
@@ -30,8 +31,20 @@ export function PkAusweisCalc() {
   const filled = useMemo(() => FIELDS.filter((f) => num(f.key) > 0).length, [values])
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
-      {/* Form */}
+    <>
+      <CalcActionBar
+        ctx={ctx ?? {}}
+        calcKey="pk-ausweis"
+        buildPayload={() => ({
+          ...Object.fromEntries(FIELDS.map((f) => [f.key, num(f.key)])),
+          filledFields: filled,
+        })}
+        onReset={() =>
+          setValues({ insuredSalary: "", capital: "", iv: "", ivChild: "", partner: "", orphan: "" })
+        }
+      />
+      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
+        {/* Form */}
       <div className="rounded-2xl border border-border bg-card p-6">
         <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           Angaben aus dem Vorsorgeausweis
@@ -89,6 +102,7 @@ export function PkAusweisCalc() {
           Originaldokument.
         </p>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
